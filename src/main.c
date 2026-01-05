@@ -22,6 +22,13 @@ int running = 0;
 int Mode = 0;
 char timerbuffer[6];
 
+// Helper macro and functions
+#define MATCH(s, n) (strcmp(section, s) == 0 && strcmp(name, n) == 0)
+
+static inline bool parseBool(const char* value) {
+    return strcmp(value, "true") == 0;
+}
+
 void preset1_config(void);
 void preset2_config(void);
 void preset3_config(void);
@@ -100,11 +107,14 @@ Preset4 preset4 = { .PresetName = "Preset 4"};
 // Initialize Preset1 structure with default values
 Preset5 preset5 = { .PresetName = "Preset 5"};
 
+// Lookup tables for preset configuration
+static const PresetConfig* presetLookup[] = {&preset1, &preset2, &preset3, &preset4, &preset5};
+static void (*presetConfigFuncs[])(void) = {preset1_config, preset2_config, preset3_config, preset4_config, preset5_config};
+
 
 
 static int handler3(void* user, const char* section, const char* name, const char* value) {
     General* generalconfig = (General*)user;
-#define MATCH(s, n) (strcmp(section, s) == 0 && strcmp(name, n) == 0)
 
     if (MATCH("General", "Keybind")) {
         // Use _strdup if your environment requires it
@@ -119,223 +129,115 @@ static int handler3(void* user, const char* section, const char* name, const cha
     return 0; // Indicate success
 }
 
+// Generic preset handler to eliminate code duplication
+static int handlerPreset(void* user, const char* section, const char* name,
+                        const char* value, const char* expectedSection) {
+    PresetConfig* pconfig = (PresetConfig*)user;
 
-static int handler1(void* user, const char* section, const char* name, const char* value)
-{
-    Preset1* pconfig1 = (Preset1*)user;
-
-#define MATCH(s, n) (strcmp(section, s) == 0 && strcmp(name, n) == 0)
-
-    if (MATCH("Preset1", "PresetName")) {
-        pconfig1->PresetName = _strdup(value);
-    }
-    else if (MATCH("Preset1", "Lag_Inbound")) {
-        pconfig1->Lag_Inbound = strcmp(value, "true") == 0;
-    }
-    else if (MATCH("Preset1", "Lag_Outbound")) {
-        pconfig1->Lag_Outbound = strcmp(value, "true") == 0;
-    }
-    else if (MATCH("Preset1", "Lag_Delay")) {
-        pconfig1->Lag_Delay = _strdup(value);
-    }
-    else if (MATCH("Preset1", "Drop_Inbound")) {
-        pconfig1->Drop_Inbound = strcmp(value, "true") == 0;
-    }
-    else if (MATCH("Preset1", "Drop_Outbound")) {
-        pconfig1->Drop_Outbound = strcmp(value, "true") == 0;
-    }
-    else if (MATCH("Preset1", "Drop_Chance")) {
-        pconfig1->Drop_Chance = _strdup(value);
-    }
-    else if (MATCH("Preset1", "Disconnect_Inbound")) {
-        pconfig1->Disconnect_Inbound = strcmp(value, "true") == 0;
-    }
-    else if (MATCH("Preset1", "Disconnect_Outbound")) {
-        pconfig1->Disconnect_Outbound = strcmp(value, "true") == 0;
-    }
-    else if (MATCH("Preset1", "BandwidthLimiter_QueueSize")) {
-        pconfig1->BandwidthLimiter_QueueSize = _strdup(value);
-    }
-    else if (MATCH("Preset1", "BandwidthLimiter_Size")) {
-        pconfig1->BandwidthLimiter_Size = _strdup(value);
-    }
-    else if (MATCH("Preset1", "BandwidthLimiter_Inbound")) {
-        pconfig1->BandwidthLimiter_Inbound = strcmp(value, "true") == 0;
-    }
-    else if (MATCH("Preset1", "BandwidthLimiter_Outbound")) {
-        pconfig1->BandwidthLimiter_Outbound = strcmp(value, "true") == 0;
-    }
-    else if (MATCH("Preset1", "BandwidthLimiter_Limit")) {
-        pconfig1->BandwidthLimiter_Limit = _strdup(value);
-    }
-    else if (MATCH("Preset1", "Throttle_DropThrottled")) {
-        pconfig1->Throttle_DropThrottled = strcmp(value, "true") == 0;
-    }
-    else if (MATCH("Preset1", "Throttle_Timeframe")) {
-        pconfig1->Throttle_Timeframe = _strdup(value);
-    }
-    else if (MATCH("Preset1", "Throttle_Inbound")) {
-        pconfig1->Throttle_Inbound = strcmp(value, "true") == 0;
-    }
-    else if (MATCH("Preset1", "Throttle_Outbound")) {
-        pconfig1->Throttle_Outbound = strcmp(value, "true") == 0;
-    }
-    else if (MATCH("Preset1", "Throttle_Chance")) {
-        pconfig1->Throttle_Chance = _strdup(value);
-    }
-    else if (MATCH("Preset1", "Duplicate_Count")) {
-        pconfig1->Duplicate_Count = _strdup(value);
-    }
-    else if (MATCH("Preset1", "Duplicate_Inbound")) {
-        pconfig1->Duplicate_Inbound = strcmp(value, "true") == 0;
-    }
-    else if (MATCH("Preset1", "Duplicate_Outbound")) {
-        pconfig1->Duplicate_Outbound = strcmp(value, "true") == 0;
-    }
-    else if (MATCH("Preset1", "Duplicate_Chance")) {
-        pconfig1->Duplicate_Chance = _strdup(value);
-    }
-    else if (MATCH("Preset1", "OutOfOrder_Inbound")) {
-        pconfig1->OutOfOrder_Inbound = strcmp(value, "true") == 0;
-    }
-    else if (MATCH("Preset1", "OutOfOrder_Outbound")) {
-        pconfig1->OutOfOrder_Outbound = strcmp(value, "true") == 0;
-    }
-    else if (MATCH("Preset1", "OutOfOrder_Chance")) {
-        pconfig1->OutOfOrder_Chance = _strdup(value);
-    }
-    else if (MATCH("Preset1", "Tamper_RedoChecksum")) {
-        pconfig1->Tamper_RedoChecksum = strcmp(value, "true") == 0;
-    }
-    else if (MATCH("Preset1", "Tamper_Inbound")) {
-        pconfig1->Tamper_Inbound = strcmp(value, "true") == 0;
-    }
-    else if (MATCH("Preset1", "Tamper_Outbound")) {
-        pconfig1->Tamper_Outbound = strcmp(value, "true") == 0;
-    }
-    else if (MATCH("Preset1", "Tamper_Chance")) {
-        pconfig1->Tamper_Chance = _strdup(value);
-    }
-    else if (MATCH("Preset1", "SetTCPRST_Inbound")) {
-        pconfig1->SetTCPRST_Inbound = strcmp(value, "true") == 0;
-    }
-    else if (MATCH("Preset1", "SetTCPRST_Outbound")) {
-        pconfig1->SetTCPRST_Outbound = strcmp(value, "true") == 0;
-    }
-    else if (MATCH("Preset1", "SetTCPRST_Chance")) {
-        pconfig1->SetTCPRST_Chance = _strdup(value);
-    }else {
-        return 0;  // unknown section/name, error
+    if (!MATCH(expectedSection, "")) {
+        if (strcmp(section, expectedSection) != 0) {
+            return 0;
+        }
     }
 
-    return 1;  // Success
-}
-static int handler2(void* user, const char* section, const char* name, const char* value)
-{
-
-    Preset2* pconfig2 = (Preset2*)user;
-
-
-#define MATCH(s, n) (strcmp(section, s) == 0 && strcmp(name, n) == 0)
-
-   if (MATCH("Preset2", "PresetName")) {
-        pconfig2->PresetName = _strdup(value);
+    if (strcmp(name, "PresetName") == 0) {
+        pconfig->PresetName = _strdup(value);
     }
-    else if (MATCH("Preset2", "Lag_Inbound")) {
-        pconfig2->Lag_Inbound = strcmp(value, "true") == 0;
+    else if (strcmp(name, "Lag_Inbound") == 0) {
+        pconfig->Lag_Inbound = parseBool(value);
     }
-    else if (MATCH("Preset2", "Lag_Outbound")) {
-        pconfig2->Lag_Outbound = strcmp(value, "true") == 0;
+    else if (strcmp(name, "Lag_Outbound") == 0) {
+        pconfig->Lag_Outbound = parseBool(value);
     }
-    else if (MATCH("Preset2", "Lag_Delay")) {
-        pconfig2->Lag_Delay = _strdup(value);
+    else if (strcmp(name, "Lag_Delay") == 0) {
+        pconfig->Lag_Delay = _strdup(value);
     }
-    else if (MATCH("Preset2", "Drop_Inbound")) {
-        pconfig2->Drop_Inbound = strcmp(value, "true") == 0;
+    else if (strcmp(name, "Drop_Inbound") == 0) {
+        pconfig->Drop_Inbound = parseBool(value);
     }
-    else if (MATCH("Preset2", "Drop_Outbound")) {
-        pconfig2->Drop_Outbound = strcmp(value, "true") == 0;
+    else if (strcmp(name, "Drop_Outbound") == 0) {
+        pconfig->Drop_Outbound = parseBool(value);
     }
-    else if (MATCH("Preset2", "Drop_Chance")) {
-        pconfig2->Drop_Chance = _strdup(value);
+    else if (strcmp(name, "Drop_Chance") == 0) {
+        pconfig->Drop_Chance = _strdup(value);
     }
-    else if (MATCH("Preset2", "Disconnect_Inbound")) {
-       pconfig2->Disconnect_Inbound = strcmp(value, "true") == 0;
-   }
-    else if (MATCH("Preset2", "Disconnect_Outbound")) {
-       pconfig2->Disconnect_Outbound = strcmp(value, "true") == 0;
-   }
-    else if (MATCH("Preset2", "BandwidthLimiter_QueueSize")) {
-        pconfig2->BandwidthLimiter_QueueSize = _strdup(value);
+    else if (strcmp(name, "Disconnect_Inbound") == 0) {
+        pconfig->Disconnect_Inbound = parseBool(value);
     }
-    else if (MATCH("Preset2", "BandwidthLimiter_Size")) {
-        pconfig2->BandwidthLimiter_Size = _strdup(value);
+    else if (strcmp(name, "Disconnect_Outbound") == 0) {
+        pconfig->Disconnect_Outbound = parseBool(value);
     }
-    else if (MATCH("Preset2", "BandwidthLimiter_Inbound")) {
-        pconfig2->BandwidthLimiter_Inbound = strcmp(value, "true") == 0;
+    else if (strcmp(name, "BandwidthLimiter_QueueSize") == 0) {
+        pconfig->BandwidthLimiter_QueueSize = _strdup(value);
     }
-    else if (MATCH("Preset2", "BandwidthLimiter_Outbound")) {
-        pconfig2->BandwidthLimiter_Outbound = strcmp(value, "true") == 0;
+    else if (strcmp(name, "BandwidthLimiter_Size") == 0) {
+        pconfig->BandwidthLimiter_Size = _strdup(value);
     }
-    else if (MATCH("Preset2", "BandwidthLimiter_Limit")) {
-        pconfig2->BandwidthLimiter_Limit = _strdup(value);
+    else if (strcmp(name, "BandwidthLimiter_Inbound") == 0) {
+        pconfig->BandwidthLimiter_Inbound = parseBool(value);
     }
-    else if (MATCH("Preset2", "Throttle_DropThrottled")) {
-        pconfig2->Throttle_DropThrottled = strcmp(value, "true") == 0;
+    else if (strcmp(name, "BandwidthLimiter_Outbound") == 0) {
+        pconfig->BandwidthLimiter_Outbound = parseBool(value);
     }
-    else if (MATCH("Preset2", "Throttle_Timeframe")) {
-        pconfig2->Throttle_Timeframe = _strdup(value);
+    else if (strcmp(name, "BandwidthLimiter_Limit") == 0) {
+        pconfig->BandwidthLimiter_Limit = _strdup(value);
     }
-    else if (MATCH("Preset2", "Throttle_Inbound")) {
-        pconfig2->Throttle_Inbound = strcmp(value, "true") == 0;
+    else if (strcmp(name, "Throttle_DropThrottled") == 0) {
+        pconfig->Throttle_DropThrottled = parseBool(value);
     }
-    else if (MATCH("Preset2", "Throttle_Outbound")) {
-        pconfig2->Throttle_Outbound = strcmp(value, "true") == 0;
+    else if (strcmp(name, "Throttle_Timeframe") == 0) {
+        pconfig->Throttle_Timeframe = _strdup(value);
     }
-    else if (MATCH("Preset2", "Throttle_Chance")) {
-        pconfig2->Throttle_Chance = _strdup(value);
+    else if (strcmp(name, "Throttle_Inbound") == 0) {
+        pconfig->Throttle_Inbound = parseBool(value);
     }
-    else if (MATCH("Preset2", "Duplicate_Count")) {
-        pconfig2->Duplicate_Count = _strdup(value);
+    else if (strcmp(name, "Throttle_Outbound") == 0) {
+        pconfig->Throttle_Outbound = parseBool(value);
     }
-    else if (MATCH("Preset2", "Duplicate_Inbound")) {
-        pconfig2->Duplicate_Inbound = strcmp(value, "true") == 0;
+    else if (strcmp(name, "Throttle_Chance") == 0) {
+        pconfig->Throttle_Chance = _strdup(value);
     }
-    else if (MATCH("Preset2", "Duplicate_Outbound")) {
-        pconfig2->Duplicate_Outbound = strcmp(value, "true") == 0;
+    else if (strcmp(name, "Duplicate_Count") == 0) {
+        pconfig->Duplicate_Count = _strdup(value);
     }
-    else if (MATCH("Preset2", "Duplicate_Chance")) {
-        pconfig2->Duplicate_Chance = _strdup(value);
+    else if (strcmp(name, "Duplicate_Inbound") == 0) {
+        pconfig->Duplicate_Inbound = parseBool(value);
     }
-    else if (MATCH("Preset2", "OutOfOrder_Inbound")) {
-        pconfig2->OutOfOrder_Inbound = strcmp(value, "true") == 0;
+    else if (strcmp(name, "Duplicate_Outbound") == 0) {
+        pconfig->Duplicate_Outbound = parseBool(value);
     }
-    else if (MATCH("Preset2", "OutOfOrder_Outbound")) {
-        pconfig2->OutOfOrder_Outbound = strcmp(value, "true") == 0;
+    else if (strcmp(name, "Duplicate_Chance") == 0) {
+        pconfig->Duplicate_Chance = _strdup(value);
     }
-    else if (MATCH("Preset2", "OutOfOrder_Chance")) {
-        pconfig2->OutOfOrder_Chance = _strdup(value);
+    else if (strcmp(name, "OutOfOrder_Inbound") == 0) {
+        pconfig->OutOfOrder_Inbound = parseBool(value);
     }
-    else if (MATCH("Preset2", "Tamper_RedoChecksum")) {
-        pconfig2->Tamper_RedoChecksum = strcmp(value, "true") == 0;
+    else if (strcmp(name, "OutOfOrder_Outbound") == 0) {
+        pconfig->OutOfOrder_Outbound = parseBool(value);
     }
-    else if (MATCH("Preset2", "Tamper_Inbound")) {
-        pconfig2->Tamper_Inbound = strcmp(value, "true") == 0;
+    else if (strcmp(name, "OutOfOrder_Chance") == 0) {
+        pconfig->OutOfOrder_Chance = _strdup(value);
     }
-    else if (MATCH("Preset2", "Tamper_Outbound")) {
-        pconfig2->Tamper_Outbound = strcmp(value, "true") == 0;
+    else if (strcmp(name, "Tamper_RedoChecksum") == 0) {
+        pconfig->Tamper_RedoChecksum = parseBool(value);
     }
-    else if (MATCH("Preset2", "Tamper_Chance")) {
-        pconfig2->Tamper_Chance = _strdup(value);
+    else if (strcmp(name, "Tamper_Inbound") == 0) {
+        pconfig->Tamper_Inbound = parseBool(value);
     }
-    else if (MATCH("Preset2", "SetTCPRST_Inbound")) {
-        pconfig2->SetTCPRST_Inbound = strcmp(value, "true") == 0;
+    else if (strcmp(name, "Tamper_Outbound") == 0) {
+        pconfig->Tamper_Outbound = parseBool(value);
     }
-    else if (MATCH("Preset2", "SetTCPRST_Outbound")) {
-        pconfig2->SetTCPRST_Outbound = strcmp(value, "true") == 0;
+    else if (strcmp(name, "Tamper_Chance") == 0) {
+        pconfig->Tamper_Chance = _strdup(value);
     }
-    else if (MATCH("Preset2", "SetTCPRST_Chance")) {
-        pconfig2->SetTCPRST_Chance = _strdup(value);
+    else if (strcmp(name, "SetTCPRST_Inbound") == 0) {
+        pconfig->SetTCPRST_Inbound = parseBool(value);
+    }
+    else if (strcmp(name, "SetTCPRST_Outbound") == 0) {
+        pconfig->SetTCPRST_Outbound = parseBool(value);
+    }
+    else if (strcmp(name, "SetTCPRST_Chance") == 0) {
+        pconfig->SetTCPRST_Chance = _strdup(value);
     }
     else {
         return 0;  // unknown section/name, error
@@ -343,338 +245,21 @@ static int handler2(void* user, const char* section, const char* name, const cha
 
     return 1;  // Success
 }
-static int handler4(void* user, const char* section, const char* name, const char* value)
-{
-    Preset3* pconfig3 = (Preset3*)user;
 
-#define MATCH(s, n) (strcmp(section, s) == 0 && strcmp(name, n) == 0)
-
-    if (MATCH("Preset3", "PresetName")) {
-        pconfig3->PresetName = _strdup(value);
-    }
-    else if (MATCH("Preset3", "Lag_Inbound")) {
-        pconfig3->Lag_Inbound = strcmp(value, "true") == 0;
-    }
-    else if (MATCH("Preset3", "Lag_Outbound")) {
-        pconfig3->Lag_Outbound = strcmp(value, "true") == 0;
-    }
-    else if (MATCH("Preset3", "Lag_Delay")) {
-        pconfig3->Lag_Delay = _strdup(value);
-    }
-    else if (MATCH("Preset3", "Drop_Inbound")) {
-        pconfig3->Drop_Inbound = strcmp(value, "true") == 0;
-    }
-    else if (MATCH("Preset3", "Drop_Outbound")) {
-        pconfig3->Drop_Outbound = strcmp(value, "true") == 0;
-    }
-    else if (MATCH("Preset3", "Drop_Chance")) {
-        pconfig3->Drop_Chance = _strdup(value);
-    }
-    else if (MATCH("Preset3", "Disconnect_Inbound")) {
-        pconfig3->Disconnect_Inbound = strcmp(value, "true") == 0;
-    }
-    else if (MATCH("Preset3", "Disconnect_Outbound")) {
-        pconfig3->Disconnect_Outbound = strcmp(value, "true") == 0;
-    }
-    else if (MATCH("Preset3", "BandwidthLimiter_QueueSize")) {
-        pconfig3->BandwidthLimiter_QueueSize = _strdup(value);
-    }
-    else if (MATCH("Preset3", "BandwidthLimiter_Size")) {
-        pconfig3->BandwidthLimiter_Size = _strdup(value);
-    }
-    else if (MATCH("Preset3", "BandwidthLimiter_Inbound")) {
-        pconfig3->BandwidthLimiter_Inbound = strcmp(value, "true") == 0;
-    }
-    else if (MATCH("Preset3", "BandwidthLimiter_Outbound")) {
-        pconfig3->BandwidthLimiter_Outbound = strcmp(value, "true") == 0;
-    }
-    else if (MATCH("Preset3", "BandwidthLimiter_Limit")) {
-        pconfig3->BandwidthLimiter_Limit = _strdup(value);
-    }
-    else if (MATCH("Preset3", "Throttle_DropThrottled")) {
-        pconfig3->Throttle_DropThrottled = strcmp(value, "true") == 0;
-    }
-    else if (MATCH("Preset3", "Throttle_Timeframe")) {
-        pconfig3->Throttle_Timeframe = _strdup(value);
-    }
-    else if (MATCH("Preset3", "Throttle_Inbound")) {
-        pconfig3->Throttle_Inbound = strcmp(value, "true") == 0;
-    }
-    else if (MATCH("Preset3", "Throttle_Outbound")) {
-        pconfig3->Throttle_Outbound = strcmp(value, "true") == 0;
-    }
-    else if (MATCH("Preset3", "Throttle_Chance")) {
-        pconfig3->Throttle_Chance = _strdup(value);
-    }
-    else if (MATCH("Preset3", "Duplicate_Count")) {
-        pconfig3->Duplicate_Count = _strdup(value);
-    }
-    else if (MATCH("Preset3", "Duplicate_Inbound")) {
-        pconfig3->Duplicate_Inbound = strcmp(value, "true") == 0;
-    }
-    else if (MATCH("Preset3", "Duplicate_Outbound")) {
-        pconfig3->Duplicate_Outbound = strcmp(value, "true") == 0;
-    }
-    else if (MATCH("Preset3", "Duplicate_Chance")) {
-        pconfig3->Duplicate_Chance = _strdup(value);
-    }
-    else if (MATCH("Preset3", "OutOfOrder_Inbound")) {
-        pconfig3->OutOfOrder_Inbound = strcmp(value, "true") == 0;
-    }
-    else if (MATCH("Preset3", "OutOfOrder_Outbound")) {
-        pconfig3->OutOfOrder_Outbound = strcmp(value, "true") == 0;
-    }
-    else if (MATCH("Preset3", "OutOfOrder_Chance")) {
-        pconfig3->OutOfOrder_Chance = _strdup(value);
-    }
-    else if (MATCH("Preset3", "Tamper_RedoChecksum")) {
-        pconfig3->Tamper_RedoChecksum = strcmp(value, "true") == 0;
-    }
-    else if (MATCH("Preset3", "Tamper_Inbound")) {
-        pconfig3->Tamper_Inbound = strcmp(value, "true") == 0;
-    }
-    else if (MATCH("Preset3", "Tamper_Outbound")) {
-        pconfig3->Tamper_Outbound = strcmp(value, "true") == 0;
-    }
-    else if (MATCH("Preset3", "Tamper_Chance")) {
-        pconfig3->Tamper_Chance = _strdup(value);
-    }
-    else if (MATCH("Preset3", "SetTCPRST_Inbound")) {
-        pconfig3->SetTCPRST_Inbound = strcmp(value, "true") == 0;
-    }
-    else if (MATCH("Preset3", "SetTCPRST_Outbound")) {
-        pconfig3->SetTCPRST_Outbound = strcmp(value, "true") == 0;
-    }
-    else if (MATCH("Preset3", "SetTCPRST_Chance")) {
-        pconfig3->SetTCPRST_Chance = _strdup(value);
-    }
-    else {
-        return 0;  // unknown section/name, error
-    }
-
-    return 1;  // Success
+static int handler1(void* user, const char* section, const char* name, const char* value) {
+    return handlerPreset(user, section, name, value, "Preset1");
 }
-static int handler5(void* user, const char* section, const char* name, const char* value)
-{
-    Preset4* pconfig4 = (Preset4*)user;
-
-#define MATCH(s, n) (strcmp(section, s) == 0 && strcmp(name, n) == 0)
-
-    if (MATCH("Preset4", "PresetName")) {
-        pconfig4->PresetName = _strdup(value);
-    }
-    else if (MATCH("Preset4", "Lag_Inbound")) {
-        pconfig4->Lag_Inbound = strcmp(value, "true") == 0;
-    }
-    else if (MATCH("Preset4", "Lag_Outbound")) {
-        pconfig4->Lag_Outbound = strcmp(value, "true") == 0;
-    }
-    else if (MATCH("Preset4", "Lag_Delay")) {
-        pconfig4->Lag_Delay = _strdup(value);
-    }
-    else if (MATCH("Preset4", "Drop_Inbound")) {
-        pconfig4->Drop_Inbound = strcmp(value, "true") == 0;
-    }
-    else if (MATCH("Preset4", "Drop_Outbound")) {
-        pconfig4->Drop_Outbound = strcmp(value, "true") == 0;
-    }
-    else if (MATCH("Preset4", "Drop_Chance")) {
-        pconfig4->Drop_Chance = _strdup(value);
-    }
-    else if (MATCH("Preset4", "Disconnect_Inbound")) {
-        pconfig4->Disconnect_Inbound = strcmp(value, "true") == 0;
-    }
-    else if (MATCH("Preset4", "Disconnect_Outbound")) {
-        pconfig4->Disconnect_Outbound = strcmp(value, "true") == 0;
-    }
-    else if (MATCH("Preset4", "BandwidthLimiter_QueueSize")) {
-        pconfig4->BandwidthLimiter_QueueSize = _strdup(value);
-    }
-    else if (MATCH("Preset4", "BandwidthLimiter_Size")) {
-        pconfig4->BandwidthLimiter_Size = _strdup(value);
-    }
-    else if (MATCH("Preset4", "BandwidthLimiter_Inbound")) {
-        pconfig4->BandwidthLimiter_Inbound = strcmp(value, "true") == 0;
-    }
-    else if (MATCH("Preset4", "BandwidthLimiter_Outbound")) {
-        pconfig4->BandwidthLimiter_Outbound = strcmp(value, "true") == 0;
-    }
-    else if (MATCH("Preset4", "BandwidthLimiter_Limit")) {
-        pconfig4->BandwidthLimiter_Limit = _strdup(value);
-    }
-    else if (MATCH("Preset4", "Throttle_DropThrottled")) {
-        pconfig4->Throttle_DropThrottled = strcmp(value, "true") == 0;
-    }
-    else if (MATCH("Preset4", "Throttle_Timeframe")) {
-        pconfig4->Throttle_Timeframe = _strdup(value);
-    }
-    else if (MATCH("Preset4", "Throttle_Inbound")) {
-        pconfig4->Throttle_Inbound = strcmp(value, "true") == 0;
-    }
-    else if (MATCH("Preset4", "Throttle_Outbound")) {
-        pconfig4->Throttle_Outbound = strcmp(value, "true") == 0;
-    }
-    else if (MATCH("Preset4", "Throttle_Chance")) {
-        pconfig4->Throttle_Chance = _strdup(value);
-    }
-    else if (MATCH("Preset4", "Duplicate_Count")) {
-        pconfig4->Duplicate_Count = _strdup(value);
-    }
-    else if (MATCH("Preset4", "Duplicate_Inbound")) {
-        pconfig4->Duplicate_Inbound = strcmp(value, "true") == 0;
-    }
-    else if (MATCH("Preset4", "Duplicate_Outbound")) {
-        pconfig4->Duplicate_Outbound = strcmp(value, "true") == 0;
-    }
-    else if (MATCH("Preset4", "Duplicate_Chance")) {
-        pconfig4->Duplicate_Chance = _strdup(value);
-    }
-    else if (MATCH("Preset4", "OutOfOrder_Inbound")) {
-        pconfig4->OutOfOrder_Inbound = strcmp(value, "true") == 0;
-    }
-    else if (MATCH("Preset4", "OutOfOrder_Outbound")) {
-        pconfig4->OutOfOrder_Outbound = strcmp(value, "true") == 0;
-    }
-    else if (MATCH("Preset4", "OutOfOrder_Chance")) {
-        pconfig4->OutOfOrder_Chance = _strdup(value);
-    }
-    else if (MATCH("Preset4", "Tamper_RedoChecksum")) {
-        pconfig4->Tamper_RedoChecksum = strcmp(value, "true") == 0;
-    }
-    else if (MATCH("Preset4", "Tamper_Inbound")) {
-        pconfig4->Tamper_Inbound = strcmp(value, "true") == 0;
-    }
-    else if (MATCH("Preset4", "Tamper_Outbound")) {
-        pconfig4->Tamper_Outbound = strcmp(value, "true") == 0;
-    }
-    else if (MATCH("Preset4", "Tamper_Chance")) {
-        pconfig4->Tamper_Chance = _strdup(value);
-    }
-    else if (MATCH("Preset4", "SetTCPRST_Inbound")) {
-        pconfig4->SetTCPRST_Inbound = strcmp(value, "true") == 0;
-    }
-    else if (MATCH("Preset4", "SetTCPRST_Outbound")) {
-        pconfig4->SetTCPRST_Outbound = strcmp(value, "true") == 0;
-    }
-    else if (MATCH("Preset4", "SetTCPRST_Chance")) {
-        pconfig4->SetTCPRST_Chance = _strdup(value);
-    }
-    else {
-        return 0;  // unknown section/name, error
-    }
-
-    return 1;  // Success
+static int handler2(void* user, const char* section, const char* name, const char* value) {
+    return handlerPreset(user, section, name, value, "Preset2");
 }
-static int handler6(void* user, const char* section, const char* name, const char* value)
-{
-    Preset5* pconfig5 = (Preset5*)user;
-
-#define MATCH(s, n) (strcmp(section, s) == 0 && strcmp(name, n) == 0)
-
-    if (MATCH("Preset5", "PresetName")) {
-        pconfig5->PresetName = _strdup(value);
-    }
-    else if (MATCH("Preset5", "Lag_Inbound")) {
-        pconfig5->Lag_Inbound = strcmp(value, "true") == 0;
-    }
-    else if (MATCH("Preset5", "Lag_Outbound")) {
-        pconfig5->Lag_Outbound = strcmp(value, "true") == 0;
-    }
-    else if (MATCH("Preset5", "Lag_Delay")) {
-        pconfig5->Lag_Delay = _strdup(value);
-    }
-    else if (MATCH("Preset5", "Drop_Inbound")) {
-        pconfig5->Drop_Inbound = strcmp(value, "true") == 0;
-    }
-    else if (MATCH("Preset5", "Drop_Outbound")) {
-        pconfig5->Drop_Outbound = strcmp(value, "true") == 0;
-    }
-    else if (MATCH("Preset5", "Drop_Chance")) {
-        pconfig5->Drop_Chance = _strdup(value);
-    }
-    else if (MATCH("Preset5", "Disconnect_Inbound")) {
-        pconfig5->Disconnect_Inbound = strcmp(value, "true") == 0;
-    }
-    else if (MATCH("Preset5", "Disconnect_Outbound")) {
-        pconfig5->Disconnect_Outbound = strcmp(value, "true") == 0;
-    }
-    else if (MATCH("Preset5", "BandwidthLimiter_QueueSize")) {
-        pconfig5->BandwidthLimiter_QueueSize = _strdup(value);
-    }
-    else if (MATCH("Preset5", "BandwidthLimiter_Size")) {
-        pconfig5->BandwidthLimiter_Size = _strdup(value);
-    }
-    else if (MATCH("Preset5", "BandwidthLimiter_Inbound")) {
-        pconfig5->BandwidthLimiter_Inbound = strcmp(value, "true") == 0;
-    }
-    else if (MATCH("Preset5", "BandwidthLimiter_Outbound")) {
-        pconfig5->BandwidthLimiter_Outbound = strcmp(value, "true") == 0;
-    }
-    else if (MATCH("Preset5", "BandwidthLimiter_Limit")) {
-        pconfig5->BandwidthLimiter_Limit = _strdup(value);
-    }
-    else if (MATCH("Preset5", "Throttle_DropThrottled")) {
-        pconfig5->Throttle_DropThrottled = strcmp(value, "true") == 0;
-    }
-    else if (MATCH("Preset5", "Throttle_Timeframe")) {
-        pconfig5->Throttle_Timeframe = _strdup(value);
-    }
-    else if (MATCH("Preset5", "Throttle_Inbound")) {
-        pconfig5->Throttle_Inbound = strcmp(value, "true") == 0;
-    }
-    else if (MATCH("Preset5", "Throttle_Outbound")) {
-        pconfig5->Throttle_Outbound = strcmp(value, "true") == 0;
-    }
-    else if (MATCH("Preset5", "Throttle_Chance")) {
-        pconfig5->Throttle_Chance = _strdup(value);
-    }
-    else if (MATCH("Preset5", "Duplicate_Count")) {
-        pconfig5->Duplicate_Count = _strdup(value);
-    }
-    else if (MATCH("Preset5", "Duplicate_Inbound")) {
-        pconfig5->Duplicate_Inbound = strcmp(value, "true") == 0;
-    }
-    else if (MATCH("Preset5", "Duplicate_Outbound")) {
-        pconfig5->Duplicate_Outbound = strcmp(value, "true") == 0;
-    }
-    else if (MATCH("Preset5", "Duplicate_Chance")) {
-        pconfig5->Duplicate_Chance = _strdup(value);
-    }
-    else if (MATCH("Preset5", "OutOfOrder_Inbound")) {
-        pconfig5->OutOfOrder_Inbound = strcmp(value, "true") == 0;
-    }
-    else if (MATCH("Preset5", "OutOfOrder_Outbound")) {
-        pconfig5->OutOfOrder_Outbound = strcmp(value, "true") == 0;
-    }
-    else if (MATCH("Preset5", "OutOfOrder_Chance")) {
-        pconfig5->OutOfOrder_Chance = _strdup(value);
-    }
-    else if (MATCH("Preset5", "Tamper_RedoChecksum")) {
-        pconfig5->Tamper_RedoChecksum = strcmp(value, "true") == 0;
-    }
-    else if (MATCH("Preset5", "Tamper_Inbound")) {
-        pconfig5->Tamper_Inbound = strcmp(value, "true") == 0;
-    }
-    else if (MATCH("Preset5", "Tamper_Outbound")) {
-        pconfig5->Tamper_Outbound = strcmp(value, "true") == 0;
-    }
-    else if (MATCH("Preset5", "Tamper_Chance")) {
-        pconfig5->Tamper_Chance = _strdup(value);
-    }
-    else if (MATCH("Preset5", "SetTCPRST_Inbound")) {
-        pconfig5->SetTCPRST_Inbound = strcmp(value, "true") == 0;
-    }
-    else if (MATCH("Preset5", "SetTCPRST_Outbound")) {
-        pconfig5->SetTCPRST_Outbound = strcmp(value, "true") == 0;
-    }
-    else if (MATCH("Preset5", "SetTCPRST_Chance")) {
-        pconfig5->SetTCPRST_Chance = _strdup(value);
-    }
-    else {
-        return 0;  // unknown section/name, error
-    }
-
-    return 1;  // Success
+static int handler4(void* user, const char* section, const char* name, const char* value) {
+    return handlerPreset(user, section, name, value, "Preset3");
+}
+static int handler5(void* user, const char* section, const char* name, const char* value) {
+    return handlerPreset(user, section, name, value, "Preset4");
+}
+static int handler6(void* user, const char* section, const char* name, const char* value) {
+    return handlerPreset(user, section, name, value, "Preset5");
 }
 
 // ! the order decides which module get processed first
@@ -1133,49 +718,38 @@ static int uiOnDialogShow(Ihandle *ih, int state) {
     }
 
     return exit ? IUP_CLOSE : IUP_DEFAULT;
-}static int uiStartCb(Ihandle* ih) {
-    if (Mode == 0) {
-        running = 1;
-        char buf[MSG_BUFSIZE];
-        UNREFERENCED_PARAMETER(ih);
-        if (divertStart(IupGetAttribute(filterText, "VALUE"), buf) == 0) {
-            showStatus(buf);
-            return IUP_DEFAULT;
-        }
+}
+static int uiStartCb(Ihandle* ih) {
+    running = 1;
+    char buf[MSG_BUFSIZE];
+    UNREFERENCED_PARAMETER(ih);
 
-        // Successfully started
-        showStatus("Started filtering. Enable functionalities to take effect.");
-        IupSetAttribute(filterText, "ACTIVE", "NO");
-        IupSetAttribute(filterButton, "TITLE", "Stop");
-        IupSetCallback(filterButton, "ACTION", uiStopCb);
-        IupSetAttribute(timer, "RUN", "NO");
+    if (divertStart(IupGetAttribute(filterText, "VALUE"), buf) == 0) {
+        showStatus(buf);
         return IUP_DEFAULT;
     }
-    else {
-        running = 1;
-        char buf[MSG_BUFSIZE];
-        UNREFERENCED_PARAMETER(ih);
-        if (divertStart(IupGetAttribute(filterText, "VALUE"), buf) == 0) {
-            showStatus(buf);
-            return IUP_DEFAULT;
-        }
 
-        // Successfully started
-        showStatus("Started filtering. Enable functionalities to take effect.");
-        IupSetAttribute(filterText, "ACTIVE", "NO");
-        IupSetAttribute(filterButton, "TITLE", "Stop");
-        IupSetCallback(filterButton, "ACTION", uiStopCb);
+    // Successfully started
+    showStatus("Started filtering. Enable functionalities to take effect.");
+    IupSetAttribute(filterText, "ACTIVE", "NO");
+    IupSetAttribute(filterButton, "TITLE", "Stop");
+    IupSetCallback(filterButton, "ACTION", uiStopCb);
+
+    // Mode-specific timer handling
+    if (Mode == 0) {
+        IupSetAttribute(timer, "RUN", "NO");
+    } else {
         IupSetAttribute(timer, "RUN", "YES");
 
-        // Create and configure the timer
+        // Create and configure the delay timer
         Ihandle* delayTimer = IupTimer();
         intToStr(DelayTimerValue, timerbuffer);
         IupSetAttribute(delayTimer, "TIME", timerbuffer);
         IupSetCallback(delayTimer, "ACTION_CB", timerDelayCb);
         IupSetAttribute(delayTimer, "RUN", "YES");
-
-        return IUP_DEFAULT;
     }
+
+    return IUP_DEFAULT;
 }
 static int uiStopCb(Ihandle *ih) {
     running = 0;
@@ -1230,8 +804,6 @@ static int uiTimerCb(Ihandle* ih) {
 
         if (processTriggered) {
             IupSetAttribute(modules[ix]->iconHandle, "IMAGE", "doing_icon");
-            // Set the value back to 0 atomically
-            InterlockedAnd16(&(modules[ix]->processTriggered), 0);
         }
         else {
             IupSetAttribute(modules[ix]->iconHandle, "IMAGE", "none_icon");
@@ -1303,749 +875,81 @@ static int uiList5SelectCb(Ihandle* ih, char* text, int item, int state) {
 static int uiList3SelectCb(Ihandle* ih, char* text, int item, int state) {
     UNREFERENCED_PARAMETER(text);
     UNREFERENCED_PARAMETER(ih);
-    UNREFERENCED_PARAMETER(item);
-    UNREFERENCED_PARAMETER(state);
 
-    if (state == 1) {
-        if (strcmp(text, preset1.PresetName) == 0) {
-            //preset1
-            preset1_config();
-        }
-        else if (strcmp(text, preset2.PresetName) == 0) {
-            //preset2
-            preset2_config();
-        }
-        else if (strcmp(text, preset3.PresetName) == 0) {
-            //preset3
-            preset3_config();
-        }
-        else if (strcmp(text, preset4.PresetName) == 0) {
-            //preset4
-            preset4_config();
-        }
-        else if (strcmp(text, preset5.PresetName) == 0) {
-            //preset5
-            preset5_config();
-        }
+    if (state == 1 && item >= 1 && item <= 5) {
+        presetConfigFuncs[item - 1]();
     }
     return IUP_DEFAULT;
 }
 
+// Generic preset configuration function to eliminate code duplication
+static void applyPresetConfig(const PresetConfig* preset) {
+    // Lag
+    Set_Lag_inboundCheckbox(preset->Lag_Inbound ? "ON" : "OFF");
+    Set_Lag_outboundCheckbox(preset->Lag_Outbound ? "ON" : "OFF");
+    Set_Lag_timeInput(preset->Lag_Delay);
+
+    // Drop
+    Set_Drop_inboundCheckbox(preset->Drop_Inbound ? "ON" : "OFF");
+    Set_Drop_outboundCheckbox(preset->Drop_Outbound ? "ON" : "OFF");
+    Set_Drop_chanceInput(preset->Drop_Chance);
+
+    // Disconnect
+    Set_Disconnect_inboundCheckbox(preset->Disconnect_Inbound ? "ON" : "OFF");
+    Set_Disconnect_outboundCheckbox(preset->Disconnect_Outbound ? "ON" : "OFF");
+
+    // Bandwidth
+    Set_Bandwidth_inboundCheckbox(preset->BandwidthLimiter_Inbound ? "ON" : "OFF");
+    Set_Bandwidth_outboundCheckbox(preset->BandwidthLimiter_Outbound ? "ON" : "OFF");
+    Set_Bandwidth_bandwidthInput(preset->BandwidthLimiter_Limit);
+    Set_Bandwidth_queueSizeInput(preset->BandwidthLimiter_QueueSize);
+    Set_Bandwidth_speed(preset->BandwidthLimiter_Size);
+
+    // Throttle
+    Set_Throttle_inboundCheckbox(preset->Throttle_Inbound ? "ON" : "OFF");
+    Set_Throttle_outboundCheckbox(preset->Throttle_Outbound ? "ON" : "OFF");
+    Set_Throttle_frameInput(preset->Throttle_Timeframe);
+    Set_Throttle_frameInpchanceInputut(preset->Throttle_Chance);
+    Set_Throttle_dropThrottledCheckbox(preset->Throttle_DropThrottled ? "ON" : "OFF");
+
+    // Duplicate
+    Set_Duplicate_inboundCheckbox(preset->Duplicate_Inbound ? "ON" : "OFF");
+    Set_Duplicate_outboundCheckbox(preset->Duplicate_Outbound ? "ON" : "OFF");
+    Set_Duplicate_chanceInput(preset->Duplicate_Chance);
+    Set_Duplicate_countInput(preset->Duplicate_Count);
+
+    // OutOfOrder
+    Set_OutOfOrder_inboundCheckbox(preset->OutOfOrder_Inbound ? "ON" : "OFF");
+    Set_OutOfOrder_outboundCheckbox(preset->OutOfOrder_Outbound ? "ON" : "OFF");
+    Set_OutOfOrder_chanceInput(preset->OutOfOrder_Chance);
+
+    // Tamper
+    Set_Tamper_inboundCheckbox(preset->Tamper_Inbound ? "ON" : "OFF");
+    Set_Tamper_outboundCheckbox(preset->Tamper_Outbound ? "ON" : "OFF");
+    Set_Tamper_chanceInput(preset->Tamper_Chance);
+    Set_Tamper_checksumCheckbox(preset->Tamper_RedoChecksum ? "ON" : "OFF");
+
+    // Reset
+    Set_Reset_inboundCheckbox(preset->SetTCPRST_Inbound ? "ON" : "OFF");
+    Set_Reset_outboundCheckbox(preset->SetTCPRST_Outbound ? "ON" : "OFF");
+    Set_Reset_chanceInput(preset->SetTCPRST_Chance);
+}
+
 void preset1_config(void) {
-    //lag
-    if (preset1.Lag_Inbound == true) {
-        Set_Lag_inboundCheckbox("ON");
-    }
-    else {
-        Set_Lag_inboundCheckbox("OFF");
-    }
-    if (preset1.Lag_Outbound == true) {
-        Set_Lag_outboundCheckbox("ON");
-    }
-    else {
-        Set_Lag_outboundCheckbox("OFF");
-    }
-    Set_Lag_timeInput(preset1.Lag_Delay);
-    //drop
-    if (preset1.Drop_Inbound == true) {
-        Set_Drop_inboundCheckbox("ON");
-    }
-    else {
-        Set_Drop_inboundCheckbox("OFF");
-    }
-    if (preset1.Drop_Outbound == true) {
-        Set_Drop_outboundCheckbox("ON");
-    }
-    else {
-        Set_Drop_outboundCheckbox("OFF");
-    }
-    Set_Drop_chanceInput(preset1.Drop_Chance);
-    //Disconnect
-    if (preset1.Disconnect_Inbound == true) {
-        Set_Disconnect_inboundCheckbox("ON");
-    }
-    else {
-        Set_Disconnect_inboundCheckbox("OFF");
-    }
-    if (preset1.Disconnect_Outbound == true) {
-        Set_Disconnect_outboundCheckbox("ON");
-    }
-    else {
-        Set_Disconnect_outboundCheckbox("OFF");
-    }
-    //bandwidth
-    if (preset1.BandwidthLimiter_Inbound == true) {
-        Set_Bandwidth_inboundCheckbox("ON");
-    }
-    else {
-        Set_Bandwidth_inboundCheckbox("OFF");
-    }
-    if (preset1.BandwidthLimiter_Outbound == true) {
-        Set_Bandwidth_outboundCheckbox("ON");
-    }
-    else {
-        Set_Bandwidth_outboundCheckbox("OFF");
-    }
-    Set_Bandwidth_bandwidthInput(preset1.BandwidthLimiter_Limit);
-    Set_Bandwidth_queueSizeInput(preset1.BandwidthLimiter_QueueSize);
-    Set_Bandwidth_speed(preset1.BandwidthLimiter_Size);
-    //Throttle
-    if (preset1.Throttle_Inbound == true) {
-        Set_Throttle_inboundCheckbox("ON");
-    }
-    else {
-        Set_Throttle_inboundCheckbox("OFF");
-    }
-    if (preset1.Throttle_Outbound == true) {
-        Set_Throttle_outboundCheckbox("ON");
-    }
-    else {
-        Set_Throttle_outboundCheckbox("OFF");
-    }
-    Set_Throttle_frameInput(preset1.Throttle_Timeframe);
-    Set_Throttle_frameInpchanceInputut(preset1.Throttle_Chance);
-    if (preset1.Throttle_DropThrottled == true) {
-        Set_Throttle_dropThrottledCheckbox("ON");
-    }
-    else {
-        Set_Throttle_dropThrottledCheckbox("OFF");
-    }
-    //Duplicate
-    if (preset1.Duplicate_Inbound == true) {
-        Set_Duplicate_inboundCheckbox("ON");
-    }
-    else {
-        Set_Duplicate_inboundCheckbox("OFF");
-    }
-    if (preset1.Duplicate_Outbound == true) {
-        Set_Duplicate_outboundCheckbox("ON");
-    }
-    else {
-        Set_Duplicate_outboundCheckbox("OFF");
-    }
-    Set_Duplicate_chanceInput(preset1.Duplicate_Chance);
-    Set_Duplicate_countInput(preset1.Duplicate_Count);
-    //OutOfOrdfer
-    if (preset1.OutOfOrder_Inbound == true) {
-        Set_OutOfOrder_inboundCheckbox("ON");
-    }
-    else {
-        Set_OutOfOrder_inboundCheckbox("OFF");
-    }
-    if (preset1.OutOfOrder_Outbound == true) {
-        Set_OutOfOrder_outboundCheckbox("ON");
-    }
-    else {
-        Set_OutOfOrder_outboundCheckbox("OFF");
-    }
-    Set_OutOfOrder_chanceInput(preset1.OutOfOrder_Chance);
-    //Tamper
-    if (preset1.Tamper_Inbound == true) {
-        Set_Tamper_inboundCheckbox("ON");
-    }
-    else {
-        Set_Tamper_inboundCheckbox("OFF");
-    }
-    if (preset1.Tamper_Outbound == true) {
-        Set_Tamper_outboundCheckbox("ON");
-    }
-    else {
-        Set_Tamper_outboundCheckbox("OFF");
-    }
-    Set_Tamper_chanceInput(preset1.Tamper_Chance);
-    if (preset1.Tamper_RedoChecksum == true) {
-        Set_Tamper_checksumCheckbox("ON");
-    }
-    else {
-        Set_Tamper_checksumCheckbox("OFF");
-    }
-    //Reset
-    if (preset1.SetTCPRST_Inbound == true) {
-        Set_Reset_inboundCheckbox("ON");
-    }
-    else {
-        Set_Reset_inboundCheckbox("OFF");
-    }
-    if (preset1.SetTCPRST_Outbound == true) {
-        Set_Reset_outboundCheckbox("ON");
-    }
-    else {
-        Set_Reset_outboundCheckbox("OFF");
-    }
-    Set_Reset_chanceInput(preset1.SetTCPRST_Chance);
+    applyPresetConfig(&preset1);
 }
 
 void preset2_config(void) {
-    //lag
-    if (preset2.Lag_Inbound == true) {
-        Set_Lag_inboundCheckbox("ON");
-    }
-    else {
-        Set_Lag_inboundCheckbox("OFF");
-    }
-    if (preset2.Lag_Outbound == true) {
-        Set_Lag_outboundCheckbox("ON");
-    }
-    else {
-        Set_Lag_outboundCheckbox("OFF");
-    }
-    Set_Lag_timeInput(preset2.Lag_Delay);
-    //drop
-    if (preset2.Drop_Inbound == true) {
-        Set_Drop_inboundCheckbox("ON");
-    }
-    else {
-        Set_Drop_inboundCheckbox("OFF");
-    }
-    if (preset2.Drop_Outbound == true) {
-        Set_Drop_outboundCheckbox("ON");
-    }
-    else {
-        Set_Drop_outboundCheckbox("OFF");
-    }
-    Set_Drop_chanceInput(preset2.Drop_Chance);
-    //Disconnect
-    if (preset2.Disconnect_Inbound == true) {
-        Set_Disconnect_inboundCheckbox("ON");
-    }
-    else {
-        Set_Disconnect_inboundCheckbox("OFF");
-    }
-    if (preset2.Disconnect_Outbound == true) {
-        Set_Disconnect_outboundCheckbox("ON");
-    }
-    else {
-        Set_Disconnect_outboundCheckbox("OFF");
-    }
-    //bandwidth
-    if (preset2.BandwidthLimiter_Inbound == true) {
-        Set_Bandwidth_inboundCheckbox("ON");
-    }
-    else {
-        Set_Bandwidth_inboundCheckbox("OFF");
-    }
-    if (preset2.BandwidthLimiter_Outbound == true) {
-        Set_Bandwidth_outboundCheckbox("ON");
-    }
-    else {
-        Set_Bandwidth_outboundCheckbox("OFF");
-    }
-    Set_Bandwidth_bandwidthInput(preset2.BandwidthLimiter_Limit);
-    Set_Bandwidth_queueSizeInput(preset2.BandwidthLimiter_QueueSize);
-    Set_Bandwidth_speed(preset2.BandwidthLimiter_Size);
-    //Throttle
-    if (preset2.Throttle_Inbound == true) {
-        Set_Throttle_inboundCheckbox("ON");
-    }
-    else {
-        Set_Throttle_inboundCheckbox("OFF");
-    }
-    if (preset2.Throttle_Outbound == true) {
-        Set_Throttle_outboundCheckbox("ON");
-    }
-    else {
-        Set_Throttle_outboundCheckbox("OFF");
-    }
-    Set_Throttle_frameInput(preset2.Throttle_Timeframe);
-    Set_Throttle_frameInpchanceInputut(preset2.Throttle_Chance);
-    if (preset2.Throttle_DropThrottled == true) {
-        Set_Throttle_dropThrottledCheckbox("ON");
-    }
-    else {
-        Set_Throttle_dropThrottledCheckbox("OFF");
-    }
-    //Duplicate
-    if (preset2.Duplicate_Inbound == true) {
-        Set_Duplicate_inboundCheckbox("ON");
-    }
-    else {
-        Set_Duplicate_inboundCheckbox("OFF");
-    }
-    if (preset2.Duplicate_Outbound == true) {
-        Set_Duplicate_outboundCheckbox("ON");
-    }
-    else {
-        Set_Duplicate_outboundCheckbox("OFF");
-    }
-    Set_Duplicate_chanceInput(preset2.Duplicate_Chance);
-    Set_Duplicate_countInput(preset2.Duplicate_Count);
-    //OutOfOrdfer
-    if (preset2.OutOfOrder_Inbound == true) {
-        Set_OutOfOrder_inboundCheckbox("ON");
-    }
-    else {
-        Set_OutOfOrder_inboundCheckbox("OFF");
-    }
-    if (preset2.OutOfOrder_Outbound == true) {
-        Set_OutOfOrder_outboundCheckbox("ON");
-    }
-    else {
-        Set_OutOfOrder_outboundCheckbox("OFF");
-    }
-    Set_OutOfOrder_chanceInput(preset2.OutOfOrder_Chance);
-    //Tamper
-    if (preset2.Tamper_Inbound == true) {
-        Set_Tamper_inboundCheckbox("ON");
-    }
-    else {
-        Set_Tamper_inboundCheckbox("OFF");
-    }
-    if (preset2.Tamper_Outbound == true) {
-        Set_Tamper_outboundCheckbox("ON");
-    }
-    else {
-        Set_Tamper_outboundCheckbox("OFF");
-    }
-    Set_Tamper_chanceInput(preset2.Tamper_Chance);
-    if (preset2.Tamper_RedoChecksum == true) {
-        Set_Tamper_checksumCheckbox("ON");
-    }
-    else {
-        Set_Tamper_checksumCheckbox("OFF");
-    }
-    //Reset
-    if (preset2.SetTCPRST_Inbound == true) {
-        Set_Reset_inboundCheckbox("ON");
-    }
-    else {
-        Set_Reset_inboundCheckbox("OFF");
-    }
-    if (preset2.SetTCPRST_Outbound == true) {
-        Set_Reset_outboundCheckbox("ON");
-    }
-    else {
-        Set_Reset_outboundCheckbox("OFF");
-    }
-    Set_Reset_chanceInput(preset2.SetTCPRST_Chance);
+    applyPresetConfig(&preset2);
 }
 void preset3_config(void) {
-    //lag
-    if (preset3.Lag_Inbound == true) {
-        Set_Lag_inboundCheckbox("ON");
-    }
-    else {
-        Set_Lag_inboundCheckbox("OFF");
-    }
-    if (preset3.Lag_Outbound == true) {
-        Set_Lag_outboundCheckbox("ON");
-    }
-    else {
-        Set_Lag_outboundCheckbox("OFF");
-    }
-    Set_Lag_timeInput(preset3.Lag_Delay);
-    //drop
-    if (preset3.Drop_Inbound == true) {
-        Set_Drop_inboundCheckbox("ON");
-    }
-    else {
-        Set_Drop_inboundCheckbox("OFF");
-    }
-    if (preset3.Drop_Outbound == true) {
-        Set_Drop_outboundCheckbox("ON");
-    }
-    else {
-        Set_Drop_outboundCheckbox("OFF");
-    }
-    Set_Drop_chanceInput(preset3.Drop_Chance);
-    //Disconnect
-    if (preset3.Disconnect_Inbound == true) {
-        Set_Disconnect_inboundCheckbox("ON");
-    }
-    else {
-        Set_Disconnect_inboundCheckbox("OFF");
-    }
-    if (preset3.Disconnect_Outbound == true) {
-        Set_Disconnect_outboundCheckbox("ON");
-    }
-    else {
-        Set_Disconnect_outboundCheckbox("OFF");
-    }
-    //bandwidth
-    if (preset3.BandwidthLimiter_Inbound == true) {
-        Set_Bandwidth_inboundCheckbox("ON");
-    }
-    else {
-        Set_Bandwidth_inboundCheckbox("OFF");
-    }
-    if (preset3.BandwidthLimiter_Outbound == true) {
-        Set_Bandwidth_outboundCheckbox("ON");
-    }
-    else {
-        Set_Bandwidth_outboundCheckbox("OFF");
-    }
-    Set_Bandwidth_bandwidthInput(preset3.BandwidthLimiter_Limit);
-    Set_Bandwidth_queueSizeInput(preset3.BandwidthLimiter_QueueSize);
-    Set_Bandwidth_speed(preset3.BandwidthLimiter_Size);
-    //Throttle
-    if (preset3.Throttle_Inbound == true) {
-        Set_Throttle_inboundCheckbox("ON");
-    }
-    else {
-        Set_Throttle_inboundCheckbox("OFF");
-    }
-    if (preset3.Throttle_Outbound == true) {
-        Set_Throttle_outboundCheckbox("ON");
-    }
-    else {
-        Set_Throttle_outboundCheckbox("OFF");
-    }
-    Set_Throttle_frameInput(preset3.Throttle_Timeframe);
-    Set_Throttle_frameInpchanceInputut(preset3.Throttle_Chance);
-    if (preset3.Throttle_DropThrottled == true) {
-        Set_Throttle_dropThrottledCheckbox("ON");
-    }
-    else {
-        Set_Throttle_dropThrottledCheckbox("OFF");
-    }
-    //Duplicate
-    if (preset3.Duplicate_Inbound == true) {
-        Set_Duplicate_inboundCheckbox("ON");
-    }
-    else {
-        Set_Duplicate_inboundCheckbox("OFF");
-    }
-    if (preset3.Duplicate_Outbound == true) {
-        Set_Duplicate_outboundCheckbox("ON");
-    }
-    else {
-        Set_Duplicate_outboundCheckbox("OFF");
-    }
-    Set_Duplicate_chanceInput(preset3.Duplicate_Chance);
-    Set_Duplicate_countInput(preset3.Duplicate_Count);
-    //OutOfOrdfer
-    if (preset3.OutOfOrder_Inbound == true) {
-        Set_OutOfOrder_inboundCheckbox("ON");
-    }
-    else {
-        Set_OutOfOrder_inboundCheckbox("OFF");
-    }
-    if (preset3.OutOfOrder_Outbound == true) {
-        Set_OutOfOrder_outboundCheckbox("ON");
-    }
-    else {
-        Set_OutOfOrder_outboundCheckbox("OFF");
-    }
-    Set_OutOfOrder_chanceInput(preset3.OutOfOrder_Chance);
-    //Tamper
-    if (preset3.Tamper_Inbound == true) {
-        Set_Tamper_inboundCheckbox("ON");
-    }
-    else {
-        Set_Tamper_inboundCheckbox("OFF");
-    }
-    if (preset3.Tamper_Outbound == true) {
-        Set_Tamper_outboundCheckbox("ON");
-    }
-    else {
-        Set_Tamper_outboundCheckbox("OFF");
-    }
-    Set_Tamper_chanceInput(preset3.Tamper_Chance);
-    if (preset3.Tamper_RedoChecksum == true) {
-        Set_Tamper_checksumCheckbox("ON");
-    }
-    else {
-        Set_Tamper_checksumCheckbox("OFF");
-    }
-    //Reset
-    if (preset3.SetTCPRST_Inbound == true) {
-        Set_Reset_inboundCheckbox("ON");
-    }
-    else {
-        Set_Reset_inboundCheckbox("OFF");
-    }
-    if (preset3.SetTCPRST_Outbound == true) {
-        Set_Reset_outboundCheckbox("ON");
-    }
-    else {
-        Set_Reset_outboundCheckbox("OFF");
-    }
-    Set_Reset_chanceInput(preset3.SetTCPRST_Chance);
+    applyPresetConfig(&preset3);
 }
 void preset4_config(void) {
-    //lag
-    if (preset4.Lag_Inbound == true) {
-        Set_Lag_inboundCheckbox("ON");
-    }
-    else {
-        Set_Lag_inboundCheckbox("OFF");
-    }
-    if (preset4.Lag_Outbound == true) {
-        Set_Lag_outboundCheckbox("ON");
-    }
-    else {
-        Set_Lag_outboundCheckbox("OFF");
-    }
-    Set_Lag_timeInput(preset4.Lag_Delay);
-    //drop
-    if (preset4.Drop_Inbound == true) {
-        Set_Drop_inboundCheckbox("ON");
-    }
-    else {
-        Set_Drop_inboundCheckbox("OFF");
-    }
-    if (preset4.Drop_Outbound == true) {
-        Set_Drop_outboundCheckbox("ON");
-    }
-    else {
-        Set_Drop_outboundCheckbox("OFF");
-    }
-    Set_Drop_chanceInput(preset4.Drop_Chance);
-    //Disconnect
-    if (preset4.Disconnect_Inbound == true) {
-        Set_Disconnect_inboundCheckbox("ON");
-    }
-    else {
-        Set_Disconnect_inboundCheckbox("OFF");
-    }
-    if (preset4.Disconnect_Outbound == true) {
-        Set_Disconnect_outboundCheckbox("ON");
-    }
-    else {
-        Set_Disconnect_outboundCheckbox("OFF");
-    }
-    //bandwidth
-    if (preset4.BandwidthLimiter_Inbound == true) {
-        Set_Bandwidth_inboundCheckbox("ON");
-    }
-    else {
-        Set_Bandwidth_inboundCheckbox("OFF");
-    }
-    if (preset4.BandwidthLimiter_Outbound == true) {
-        Set_Bandwidth_outboundCheckbox("ON");
-    }
-    else {
-        Set_Bandwidth_outboundCheckbox("OFF");
-    }
-    Set_Bandwidth_bandwidthInput(preset4.BandwidthLimiter_Limit);
-    Set_Bandwidth_queueSizeInput(preset4.BandwidthLimiter_QueueSize);
-    Set_Bandwidth_speed(preset4.BandwidthLimiter_Size);
-    //Throttle
-    if (preset4.Throttle_Inbound == true) {
-        Set_Throttle_inboundCheckbox("ON");
-    }
-    else {
-        Set_Throttle_inboundCheckbox("OFF");
-    }
-    if (preset4.Throttle_Outbound == true) {
-        Set_Throttle_outboundCheckbox("ON");
-    }
-    else {
-        Set_Throttle_outboundCheckbox("OFF");
-    }
-    Set_Throttle_frameInput(preset4.Throttle_Timeframe);
-    Set_Throttle_frameInpchanceInputut(preset4.Throttle_Chance);
-    if (preset4.Throttle_DropThrottled == true) {
-        Set_Throttle_dropThrottledCheckbox("ON");
-    }
-    else {
-        Set_Throttle_dropThrottledCheckbox("OFF");
-    }
-    //Duplicate
-    if (preset4.Duplicate_Inbound == true) {
-        Set_Duplicate_inboundCheckbox("ON");
-    }
-    else {
-        Set_Duplicate_inboundCheckbox("OFF");
-    }
-    if (preset4.Duplicate_Outbound == true) {
-        Set_Duplicate_outboundCheckbox("ON");
-    }
-    else {
-        Set_Duplicate_outboundCheckbox("OFF");
-    }
-    Set_Duplicate_chanceInput(preset4.Duplicate_Chance);
-    Set_Duplicate_countInput(preset4.Duplicate_Count);
-    //OutOfOrdfer
-    if (preset4.OutOfOrder_Inbound == true) {
-        Set_OutOfOrder_inboundCheckbox("ON");
-    }
-    else {
-        Set_OutOfOrder_inboundCheckbox("OFF");
-    }
-    if (preset4.OutOfOrder_Outbound == true) {
-        Set_OutOfOrder_outboundCheckbox("ON");
-    }
-    else {
-        Set_OutOfOrder_outboundCheckbox("OFF");
-    }
-    Set_OutOfOrder_chanceInput(preset4.OutOfOrder_Chance);
-    //Tamper
-    if (preset4.Tamper_Inbound == true) {
-        Set_Tamper_inboundCheckbox("ON");
-    }
-    else {
-        Set_Tamper_inboundCheckbox("OFF");
-    }
-    if (preset4.Tamper_Outbound == true) {
-        Set_Tamper_outboundCheckbox("ON");
-    }
-    else {
-        Set_Tamper_outboundCheckbox("OFF");
-    }
-    Set_Tamper_chanceInput(preset4.Tamper_Chance);
-    if (preset4.Tamper_RedoChecksum == true) {
-        Set_Tamper_checksumCheckbox("ON");
-    }
-    else {
-        Set_Tamper_checksumCheckbox("OFF");
-    }
-    //Reset
-    if (preset4.SetTCPRST_Inbound == true) {
-        Set_Reset_inboundCheckbox("ON");
-    }
-    else {
-        Set_Reset_inboundCheckbox("OFF");
-    }
-    if (preset4.SetTCPRST_Outbound == true) {
-        Set_Reset_outboundCheckbox("ON");
-    }
-    else {
-        Set_Reset_outboundCheckbox("OFF");
-    }
-    Set_Reset_chanceInput(preset4.SetTCPRST_Chance);
+    applyPresetConfig(&preset4);
 }
 void preset5_config(void) {
-    //lag
-    if (preset5.Lag_Inbound == true) {
-        Set_Lag_inboundCheckbox("ON");
-    }
-    else {
-        Set_Lag_inboundCheckbox("OFF");
-    }
-    if (preset5.Lag_Outbound == true) {
-        Set_Lag_outboundCheckbox("ON");
-    }
-    else {
-        Set_Lag_outboundCheckbox("OFF");
-    }
-    Set_Lag_timeInput(preset5.Lag_Delay);
-    //drop
-    if (preset5.Drop_Inbound == true) {
-        Set_Drop_inboundCheckbox("ON");
-    }
-    else {
-        Set_Drop_inboundCheckbox("OFF");
-    }
-    if (preset5.Drop_Outbound == true) {
-        Set_Drop_outboundCheckbox("ON");
-    }
-    else {
-        Set_Drop_outboundCheckbox("OFF");
-    }
-    Set_Drop_chanceInput(preset5.Drop_Chance);
-    //Disconnect
-    if (preset5.Disconnect_Inbound == true) {
-        Set_Disconnect_inboundCheckbox("ON");
-    }
-    else {
-        Set_Disconnect_inboundCheckbox("OFF");
-    }
-    if (preset5.Disconnect_Outbound == true) {
-        Set_Disconnect_outboundCheckbox("ON");
-    }
-    else {
-        Set_Disconnect_outboundCheckbox("OFF");
-    }
-    //bandwidth
-    if (preset5.BandwidthLimiter_Inbound == true) {
-        Set_Bandwidth_inboundCheckbox("ON");
-    }
-    else {
-        Set_Bandwidth_inboundCheckbox("OFF");
-    }
-    if (preset5.BandwidthLimiter_Outbound == true) {
-        Set_Bandwidth_outboundCheckbox("ON");
-    }
-    else {
-        Set_Bandwidth_outboundCheckbox("OFF");
-    }
-    Set_Bandwidth_bandwidthInput(preset5.BandwidthLimiter_Limit);
-    Set_Bandwidth_queueSizeInput(preset5.BandwidthLimiter_QueueSize);
-    Set_Bandwidth_speed(preset5.BandwidthLimiter_Size);
-    //Throttle
-    if (preset5.Throttle_Inbound == true) {
-        Set_Throttle_inboundCheckbox("ON");
-    }
-    else {
-        Set_Throttle_inboundCheckbox("OFF");
-    }
-    if (preset5.Throttle_Outbound == true) {
-        Set_Throttle_outboundCheckbox("ON");
-    }
-    else {
-        Set_Throttle_outboundCheckbox("OFF");
-    }
-    Set_Throttle_frameInput(preset5.Throttle_Timeframe);
-    Set_Throttle_frameInpchanceInputut(preset5.Throttle_Chance);
-    if (preset5.Throttle_DropThrottled == true) {
-        Set_Throttle_dropThrottledCheckbox("ON");
-    }
-    else {
-        Set_Throttle_dropThrottledCheckbox("OFF");
-    }
-    //Duplicate
-    if (preset5.Duplicate_Inbound == true) {
-        Set_Duplicate_inboundCheckbox("ON");
-    }
-    else {
-        Set_Duplicate_inboundCheckbox("OFF");
-    }
-    if (preset5.Duplicate_Outbound == true) {
-        Set_Duplicate_outboundCheckbox("ON");
-    }
-    else {
-        Set_Duplicate_outboundCheckbox("OFF");
-    }
-    Set_Duplicate_chanceInput(preset5.Duplicate_Chance);
-    Set_Duplicate_countInput(preset5.Duplicate_Count);
-    //OutOfOrdfer
-    if (preset5.OutOfOrder_Inbound == true) {
-        Set_OutOfOrder_inboundCheckbox("ON");
-    }
-    else {
-        Set_OutOfOrder_inboundCheckbox("OFF");
-    }
-    if (preset5.OutOfOrder_Outbound == true) {
-        Set_OutOfOrder_outboundCheckbox("ON");
-    }
-    else {
-        Set_OutOfOrder_outboundCheckbox("OFF");
-    }
-    Set_OutOfOrder_chanceInput(preset5.OutOfOrder_Chance);
-    //Tamper
-    if (preset5.Tamper_Inbound == true) {
-        Set_Tamper_inboundCheckbox("ON");
-    }
-    else {
-        Set_Tamper_inboundCheckbox("OFF");
-    }
-    if (preset5.Tamper_Outbound == true) {
-        Set_Tamper_outboundCheckbox("ON");
-    }
-    else {
-        Set_Tamper_outboundCheckbox("OFF");
-    }
-    Set_Tamper_chanceInput(preset5.Tamper_Chance);
-    if (preset5.Tamper_RedoChecksum == true) {
-        Set_Tamper_checksumCheckbox("ON");
-    }
-    else {
-        Set_Tamper_checksumCheckbox("OFF");
-    }
-    //Reset
-    if (preset5.SetTCPRST_Inbound == true) {
-        Set_Reset_inboundCheckbox("ON");
-    }
-    else {
-        Set_Reset_inboundCheckbox("OFF");
-    }
-    if (preset5.SetTCPRST_Outbound == true) {
-        Set_Reset_outboundCheckbox("ON");
-    }
-    else {
-        Set_Reset_outboundCheckbox("OFF");
-    }
-    Set_Reset_chanceInput(preset5.SetTCPRST_Chance);
+    applyPresetConfig(&preset5);
 }
 
 static int uiFilterTextCb(Ihandle *ih)  {
@@ -2091,55 +995,53 @@ static void uiSetupModule(Module *module, Ihandle *parent) {
 DWORD WINAPI threadFunction(LPVOID lpParam) {
     UNREFERENCED_PARAMETER(lpParam);
     printf("Hello from the thread!\n");
+
+    // Convert keybind once outside the loop for better performance
+    wchar_t wch;
+    size_t convertedChars = 0;
+    mbstowcs_s(&convertedChars, &wch, 2, general.Keybind, 1);
+
+    if (convertedChars == 0) {
+        return 1;
+    }
+
+    SHORT vkScan = VkKeyScanW(wch);
+    int vkCode = LOBYTE(vkScan);
+
+    if (vkScan == -1) {
+        return 1;
+    }
+
     BOOL keyToggled = FALSE; // Track the toggle state
     BOOL keyCurrentlyDown = FALSE; // Track the current key state
+
     while (1) {
+        BOOL isKeyDown = (GetAsyncKeyState(vkCode) & 0x8000) != 0;
 
-        wchar_t wch;
-
-        // Convert the first character of Keybind to wchar_t
-        size_t convertedChars = 0;
-        mbstowcs_s(&convertedChars, &wch, 1, general.Keybind, _TRUNCATE);
-
-        if (convertedChars > 0) {
-                mbstowcs(&wch, general.Keybind, 1);
-                // Convert character to a virtual-key code using VkKeyScanW
-                SHORT vkScan = VkKeyScanW(wch);
-
-                // Extract the virtual-key code
-                int vkCode = LOBYTE(vkScan);
-                // Check if the key was found
-                if (vkScan == -1) {
-                    return 1;
-                }
-            BOOL isKeyDown = (GetAsyncKeyState(vkCode) & 0x8000) != 0; // 0x53 is the virtual key code for 'S' 0x5A = 'Z', 0xDB = '['
-
-            if (isKeyDown && !keyCurrentlyDown) {
-                // Key was just pressed
-                keyToggled = !keyToggled; // Toggle the state
-                keyCurrentlyDown = TRUE; // Set the key state to down
-                printf("Key [ toggled to %s!\n", keyToggled ? "ON" : "OFF");
-                if (running) {
-                    uiStopCb(filterButton);
+        if (isKeyDown && !keyCurrentlyDown) {
+            // Key was just pressed
+            keyToggled = !keyToggled; // Toggle the state
+            keyCurrentlyDown = TRUE; // Set the key state to down
+            printf("Key [ toggled to %s!\n", keyToggled ? "ON" : "OFF");
+            if (running) {
+                uiStopCb(filterButton);
+            }
+            else {
+                if (Mode == 0) {
+                    uiStartCb(filterButton);
                 }
                 else {
-                    if (Mode == 0) {
-                        uiStartCb(filterButton);
-                    }
-                    else {
-
-                        IupSetAttribute(filterButton, "ACTIVE", "NO");
-                        uiStartCb(filterButton);
-                        Sleep(DelayTimerValue);
-                        uiStopCb(filterButton);
-                        IupSetAttribute(filterButton, "ACTIVE", "YES");
-                    }
+                    IupSetAttribute(filterButton, "ACTIVE", "NO");
+                    uiStartCb(filterButton);
+                    Sleep(DelayTimerValue);
+                    uiStopCb(filterButton);
+                    IupSetAttribute(filterButton, "ACTIVE", "YES");
                 }
             }
-            else if (!isKeyDown && keyCurrentlyDown) {
-                // Key was just released
-                keyCurrentlyDown = FALSE; // Set the key state to up
-            }
+        }
+        else if (!isKeyDown && keyCurrentlyDown) {
+            // Key was just released
+            keyCurrentlyDown = FALSE; // Set the key state to up
         }
 
         Sleep(10); // Sleep to reduce CPU usage
@@ -2156,25 +1058,7 @@ static int timerDelayCb(Ihandle* ih) {
 }
 
 void intToStr(int num, char* str) {
-    int i = 0;
-    int sign = num;
-    if (num < 0) {
-        num = -num;
-    }
-    do {
-        str[i++] = num % 10 + '0';
-        num /= 10;
-    } while (num > 0);
-    if (sign < 0) {
-        str[i++] = '-';
-    }
-    str[i] = '\0';
-    // Reverse the string
-    for (int j = 0; j < i / 2; j++) {
-        char temp = str[j];
-        str[j] = str[i - j - 1];
-        str[i - j - 1] = temp;
-    }
+    sprintf(str, "%d", num);
 }
 int main(int argc, char* argv[]) {
 
