@@ -135,13 +135,24 @@ Module tamperModule = {
 
 void Set_Tamper_inboundCheckbox(const char* value) {
     IupSetAttribute(inboundCheckbox, "VALUE", value);
+    // Manually trigger callback to sync the underlying variable
+    int state = (strcmp(value, "ON") == 0) ? 1 : 0;
+    uiSyncToggle(inboundCheckbox, state);
 }
 void Set_Tamper_outboundCheckbox(const char* value) {
     IupSetAttribute(outboundCheckbox, "VALUE", value);
+    // Manually trigger callback to sync the underlying variable
+    int state = (strcmp(value, "ON") == 0) ? 1 : 0;
+    uiSyncToggle(outboundCheckbox, state);
 }
 void Set_Tamper_chanceInput(const char* value) {
     IupSetAttribute(chanceInput, "VALUE", value);
+    // Manually trigger callback to sync the underlying variable
+    uiSyncChance(chanceInput);
 }
 void Set_Tamper_checksumCheckbox(const char* value) {
     IupSetAttribute(checksumCheckbox, "VALUE", value);
+    // Manually trigger callback to sync the underlying variable
+    int state = (strcmp(value, "ON") == 0) ? 1 : 0;
+    uiSyncToggle(checksumCheckbox, state);
 }

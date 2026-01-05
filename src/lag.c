@@ -137,11 +137,18 @@ Module lagModule = {
 
 void Set_Lag_inboundCheckbox(const char* value) {
     IupSetAttribute(inboundCheckbox, "VALUE", value);
+    // Manually trigger callback to sync the underlying variable
+    int state = (strcmp(value, "ON") == 0) ? 1 : 0;
+    uiSyncToggle(inboundCheckbox, state);
 }
 void Set_Lag_outboundCheckbox(const char* value) {
     IupSetAttribute(outboundCheckbox, "VALUE", value);
+    // Manually trigger callback to sync the underlying variable
+    int state = (strcmp(value, "ON") == 0) ? 1 : 0;
+    uiSyncToggle(outboundCheckbox, state);
 }
 void Set_Lag_timeInput(const char* value) {
-   
-   IupSetAttribute(timeInput, "VALUE", value);
+    IupSetAttribute(timeInput, "VALUE", value);
+    // Manually trigger callback to sync the underlying variable
+    uiSyncInteger(timeInput);
 }

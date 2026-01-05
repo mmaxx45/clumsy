@@ -171,16 +171,29 @@ Module throttleModule = {
 
 void Set_Throttle_inboundCheckbox(const char* value) {
     IupSetAttribute(inboundCheckbox, "VALUE", value);
+    // Manually trigger callback to sync the underlying variable
+    int state = (strcmp(value, "ON") == 0) ? 1 : 0;
+    uiSyncToggle(inboundCheckbox, state);
 }
 void Set_Throttle_outboundCheckbox(const char* value) {
     IupSetAttribute(outboundCheckbox, "VALUE", value);
+    // Manually trigger callback to sync the underlying variable
+    int state = (strcmp(value, "ON") == 0) ? 1 : 0;
+    uiSyncToggle(outboundCheckbox, state);
 }
 void Set_Throttle_dropThrottledCheckbox(const char* value) {
     IupSetAttribute(dropThrottledCheckbox, "VALUE", value);
+    // Manually trigger callback to sync the underlying variable
+    int state = (strcmp(value, "ON") == 0) ? 1 : 0;
+    uiSyncToggle(dropThrottledCheckbox, state);
 }
 void Set_Throttle_frameInpchanceInputut(const char* value) {
     IupSetAttribute(chanceInput, "VALUE", value);
+    // Manually trigger callback to sync the underlying variable
+    uiSyncChance(chanceInput);
 }
 void Set_Throttle_frameInput(const char* value) {
     IupSetAttribute(frameInput, "VALUE", value);
+    // Manually trigger callback to sync the underlying variable
+    uiSyncInteger(frameInput);
 }

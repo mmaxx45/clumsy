@@ -87,10 +87,18 @@ Module dropModule = {
 
 void Set_Drop_inboundCheckbox(const char* value) {
     IupSetAttribute(inboundCheckbox, "VALUE", value);
+    // Manually trigger callback to sync the underlying variable
+    int state = (strcmp(value, "ON") == 0) ? 1 : 0;
+    uiSyncToggle(inboundCheckbox, state);
 }
 void Set_Drop_outboundCheckbox(const char* value) {
     IupSetAttribute(outboundCheckbox, "VALUE", value);
+    // Manually trigger callback to sync the underlying variable
+    int state = (strcmp(value, "ON") == 0) ? 1 : 0;
+    uiSyncToggle(outboundCheckbox, state);
 }
 void Set_Drop_chanceInput(const char* value) {
     IupSetAttribute(chanceInput, "VALUE", value);
+    // Manually trigger callback to sync the underlying variable
+    uiSyncChance(chanceInput);
 }

@@ -465,15 +465,25 @@ int32_t crate_stats_calculate(CRateStats *rate, uint32_t now_ts)
 
 void Set_Bandwidth_inboundCheckbox(const char* value) {
     IupSetAttribute(inboundCheckbox, "VALUE", value);
+    // Manually trigger callback to sync the underlying variable
+    int state = (strcmp(value, "ON") == 0) ? 1 : 0;
+    uiSyncToggle(inboundCheckbox, state);
 }
 void Set_Bandwidth_outboundCheckbox(const char* value) {
     IupSetAttribute(outboundCheckbox, "VALUE", value);
+    // Manually trigger callback to sync the underlying variable
+    int state = (strcmp(value, "ON") == 0) ? 1 : 0;
+    uiSyncToggle(outboundCheckbox, state);
 }
 void Set_Bandwidth_bandwidthInput(const char* value) {
     IupSetAttribute(bandwidthInput, "VALUE", value);
+    // Manually trigger callback to sync the underlying variable
+    uiSyncInt32(bandwidthInput);
 }
 void Set_Bandwidth_queueSizeInput(const char* value) {
     IupSetAttribute(queueSizeInput, "VALUE", value);
+    // Manually trigger callback to sync the underlying variable
+    uiSyncInt32(queueSizeInput);
 }
 void Set_Bandwidth_speed(const char* value) {
     if (strcmp(value, "kb") == 0) {
