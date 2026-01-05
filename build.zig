@@ -40,6 +40,7 @@ pub fn build(b: *std.build.Builder) void {
     }
 
     b.installFile("etc/config.txt", b.fmt("{s}/config.txt", .{prefix}));
+    b.installFile("etc/presets.ini", b.fmt("{s}/presets.ini", .{prefix}));
     if (conf == .Ship)
         b.installFile("LICENSE", b.fmt("{s}/License.txt", .{prefix}));
 
