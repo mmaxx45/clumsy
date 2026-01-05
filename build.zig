@@ -97,23 +97,25 @@ pub fn build(b: *std.build.Builder) void {
 
     exe.step.dependOn(&cmd.step);
     exe.addObjectFile(res_obj_path);
-    exe.addCSourceFile("src/bandwidth.c", &.{""});
-    exe.addCSourceFile("src/divert.c", &.{""});
-    exe.addCSourceFile("src/drop.c", &.{""});
-    exe.addCSourceFile("src/duplicate.c", &.{""});
-    exe.addCSourceFile("src/elevate.c", &.{""});
-    exe.addCSourceFile("src/lag.c", &.{""});
-    exe.addCSourceFile("src/main.c", &.{""});
-    exe.addCSourceFile("src/ood.c", &.{""});
-    exe.addCSourceFile("src/packet.c", &.{""});
-    exe.addCSourceFile("src/reset.c", &.{""});
-    exe.addCSourceFile("src/tamper.c", &.{""});
-    exe.addCSourceFile("src/throttle.c", &.{""});
-    exe.addCSourceFile("src/utils.c", &.{""});
-    exe.addCSourceFile("src/utils.c", &.{""});
+    exe.addCSourceFile("src/bandwidth.c", &.{"-fcommon"});
+    exe.addCSourceFile("src/divert.c", &.{"-fcommon"});
+    exe.addCSourceFile("src/drop.c", &.{"-fcommon"});
+    exe.addCSourceFile("src/duplicate.c", &.{"-fcommon"});
+    exe.addCSourceFile("src/elevate.c", &.{"-fcommon"});
+    exe.addCSourceFile("src/lag.c", &.{"-fcommon"});
+    exe.addCSourceFile("src/main.c", &.{"-fcommon"});
+    exe.addCSourceFile("src/ood.c", &.{"-fcommon"});
+    exe.addCSourceFile("src/packet.c", &.{"-fcommon"});
+    exe.addCSourceFile("src/reset.c", &.{"-fcommon"});
+    exe.addCSourceFile("src/tamper.c", &.{"-fcommon"});
+    exe.addCSourceFile("src/throttle.c", &.{"-fcommon"});
+    exe.addCSourceFile("src/utils.c", &.{"-fcommon"});
+    exe.addCSourceFile("src/utils.c", &.{"-fcommon"});
+    exe.addCSourceFile("src/disconnect.c", &.{"-fcommon"});
+    exe.addCSourceFile("src/ini.c", &.{"-fcommon"});
 
     if (arch == .x86)
-        exe.addCSourceFile("etc/chkstk.s", &.{""});
+        exe.addCSourceFile("etc/chkstk.s", &.{"-fcommon"});
 
     exe.addIncludeDir(b.fmt("external/{s}/include", .{windivert_dir}));
 
@@ -123,7 +125,7 @@ pub fn build(b: *std.build.Builder) void {
     };
 
     exe.addIncludeDir(b.pathJoin(&.{iupLib, "include"}));
-    exe.addCSourceFile(b.pathJoin(&.{iupLib, "libiup.a"}), &.{""});
+    exe.addCSourceFile(b.pathJoin(&.{iupLib, "libiup.a"}), &.{"-fcommon"});
 
     exe.linkLibC();
     exe.addLibPath(b.fmt("external/{s}/{s}", .{windivert_dir, arch_tag}));
@@ -169,6 +171,7 @@ pub const RemoveOutFile = struct {
         };
         return self;
     }
+
 
     fn make(step: *Step) anyerror!void {
         const self = @fieldParentPtr(RemoveOutFile, "step", step);
