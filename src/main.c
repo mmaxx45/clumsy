@@ -852,7 +852,6 @@ void init(int argc, char* argv[]) {
         )
     );
 
-    
       controlHbox = IupHbox(
           IupLabel("Function Presets:  "),
           filterSelectList3 = IupList(NULL),
@@ -868,12 +867,9 @@ void init(int argc, char* argv[]) {
         NULL
     );
 
-     
-      
       //filterSelectList5
     lowerMiddleFrame = IupFrame(
-        controlHbox 
-  
+        controlHbox
     );
     IupHide(filterSelectList5);
     IupHide(TimerLabel);
@@ -899,7 +895,6 @@ void init(int argc, char* argv[]) {
     snprintf(labelText, len, baseText, keybind);
     middleFrame = IupFrame(
         label1 = IupLabel(labelText)
-      
     );
 
 
@@ -914,7 +909,7 @@ void init(int argc, char* argv[]) {
         }
         parameterized = 1;
     }
-    IupSetAttribute(label1, "ALIGNMENT", "ACENTER");    
+    IupSetAttribute(label1, "ALIGNMENT", "ACENTER");
     IupSetAttribute(topFrame, "TITLE", "Filtering");
     IupSetAttribute(topFrame, "EXPAND", "HORIZONTAL");
     IupSetAttribute(filterText, "EXPAND", "HORIZONTAL");
@@ -953,7 +948,7 @@ void init(int argc, char* argv[]) {
     // set filter text value since the callback won't take effect before main loop starts
     IupSetAttribute(filterText, "VALUE", filters[0].filterValue);
 
-    // functionalities frame 
+    // functionalities frame
     bottomFrame = IupFrame(
         bottomVbox = IupVbox(
             NULL
@@ -982,7 +977,6 @@ void init(int argc, char* argv[]) {
     IupSetAttribute(label1, "EXPAND", "HORIZONTAL");
     IupSetAttribute(middleFrame, "TITLE", "Info");
     IupSetAttribute(middleFrame, "EXPAND", "HORIZONTAL");
-    
 
     IupSetAttribute(label2, "EXPAND", "HORIZONTAL");
     IupSetAttribute(lowerMiddleFrame, "TITLE", "Extra Presets");
@@ -999,9 +993,6 @@ void init(int argc, char* argv[]) {
     IupSetAttribute(filterSelectList5, "DROPDOWN", "YES");
     IupSetCallback(filterSelectList5, "ACTION", (Icallback)uiList5SelectCb);
 
-
-
-    
     // setup module uis
     for (ix = 0; ix < MODULE_CNT; ++ix) {
         uiSetupModule(*(modules+ix), bottomVbox);
@@ -1023,7 +1014,6 @@ void init(int argc, char* argv[]) {
     IupSetAttribute(dialog, "SIZE", "480x"); // add padding manually to width
     IupSetAttribute(dialog, "RESIZE", "NO");
     IupSetCallback(dialog, "SHOW_CB", (Icallback)uiOnDialogShow);
-
 
     // global layout settings to affect childrens
     IupSetAttribute(dialogVBox, "ALIGNMENT", "ACENTER");
@@ -1072,7 +1062,7 @@ void cleanup() {
 
 // ui logics
 void showStatus(const char *line) {
-    IupStoreAttribute(statusLabel, "TITLE", line); 
+    IupStoreAttribute(statusLabel, "TITLE", line);
 }
 
 // in fact only 32bit binary would run on 64 bit os
@@ -1103,7 +1093,6 @@ static BOOL checkIsRunning() {
 
     return FALSE;
 }
-
 
 static int uiOnDialogShow(Ihandle *ih, int state) {
     // only need to process on show
@@ -1192,7 +1181,7 @@ static int uiStopCb(Ihandle *ih) {
     running = 0;
     int ix;
     UNREFERENCED_PARAMETER(ih);
-    
+
     // try stopping
     IupSetAttribute(filterButton, "ACTIVE", "NO");
     IupFlush(); // flush to show disabled state
@@ -1248,7 +1237,6 @@ static int uiTimerCb(Ihandle* ih) {
             IupSetAttribute(modules[ix]->iconHandle, "IMAGE", "none_icon");
         }
     }
-
     return IUP_DEFAULT;
 }
 
@@ -1256,7 +1244,6 @@ static int uiTimeoutCb(Ihandle *ih) {
     UNREFERENCED_PARAMETER(ih);
     return IUP_CLOSE;
  }
-
 
 static int uiListSelectCb(Ihandle* ih, char* text, int item, int state) {
     UNREFERENCED_PARAMETER(text);
@@ -1272,7 +1259,7 @@ static int uiList2SelectCb(Ihandle* ih, char* text, int item, int state) {
     UNREFERENCED_PARAMETER(ih);
     UNREFERENCED_PARAMETER(state);
     NetworkType = item;
- 
+
     return IUP_DEFAULT;
 }
 
@@ -1317,7 +1304,7 @@ static int uiList3SelectCb(Ihandle* ih, char* text, int item, int state) {
     UNREFERENCED_PARAMETER(text);
     UNREFERENCED_PARAMETER(ih);
     UNREFERENCED_PARAMETER(item);
-    UNREFERENCED_PARAMETER(state);  
+    UNREFERENCED_PARAMETER(state);
 
     if (state == 1) {
         if (strcmp(text, preset1.PresetName) == 0) {
@@ -1339,11 +1326,7 @@ static int uiList3SelectCb(Ihandle* ih, char* text, int item, int state) {
         else if (strcmp(text, preset5.PresetName) == 0) {
             //preset5
             preset5_config();
-          
-
         }
-      
-
     }
     return IUP_DEFAULT;
 }
@@ -2107,18 +2090,18 @@ static void uiSetupModule(Module *module, Ihandle *parent) {
 // Thread function
 DWORD WINAPI threadFunction(LPVOID lpParam) {
     UNREFERENCED_PARAMETER(lpParam);
+    printf("Hello from the thread!\n");
     BOOL keyToggled = FALSE; // Track the toggle state
     BOOL keyCurrentlyDown = FALSE; // Track the current key state
     while (1) {
- 
+
         wchar_t wch;
 
         // Convert the first character of Keybind to wchar_t
         size_t convertedChars = 0;
         mbstowcs_s(&convertedChars, &wch, 1, general.Keybind, _TRUNCATE);
-    
+
         if (convertedChars > 0) {
-       
                 mbstowcs(&wch, general.Keybind, 1);
                 // Convert character to a virtual-key code using VkKeyScanW
                 SHORT vkScan = VkKeyScanW(wch);
@@ -2144,7 +2127,7 @@ DWORD WINAPI threadFunction(LPVOID lpParam) {
                         uiStartCb(filterButton);
                     }
                     else {
-                        
+
                         IupSetAttribute(filterButton, "ACTIVE", "NO");
                         uiStartCb(filterButton);
                         Sleep(DelayTimerValue);
@@ -2161,7 +2144,6 @@ DWORD WINAPI threadFunction(LPVOID lpParam) {
 
         Sleep(10); // Sleep to reduce CPU usage
     }
-
     return 0;
 }
 // Callback function for the timer
@@ -2196,8 +2178,6 @@ void intToStr(int num, char* str) {
 }
 int main(int argc, char* argv[]) {
 
-    
-
     if (ini_parse("presets.ini", handler1, &preset1) < 0) {
         return 1;
     }
@@ -2218,11 +2198,6 @@ int main(int argc, char* argv[]) {
     }
 
     LOG("Config loaded from 'presets.ini': keybind=%c\n", general.Keybind);
-
-
-
-
-
     LOG("Is Run As Admin: %d", IsRunAsAdmin());
     LOG("Is Elevated: %d", IsElevated());
     init(argc, argv);
@@ -2253,7 +2228,6 @@ int main(int argc, char* argv[]) {
 
     preset1_config();
 
-
    // IupSetAttribute(filterSelectList3, "VALUE", "1");
 
     // Free the allocated memory
@@ -2263,7 +2237,6 @@ int main(int argc, char* argv[]) {
     //WaitForSingleObject(thread, INFINITE);
     CloseHandle(thread);
     cleanup();
-
 
     return 0;
 }
