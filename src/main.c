@@ -1191,7 +1191,7 @@ void init(int argc, char* argv[]) {
     const char* keybind = general.Keybind;
 
     // Base text with placeholder for the keybind variable
-    const char* baseText = "Use the key %s to toggle on/off\nThis is a modified version of clumsy to use hotkeys to toggle on/off coded by kalirenegade\nIf you like these updates and want to show your appreciation, feel free to donate with cashapp $kalirenegade";
+    const char* baseText = "Use the key %s to toggle on/off\nThis is a modified version of clumsy to use hotkeys to toggle on/off coded by mmaxx45";
 
     // Calculate the length needed for the formatted string
     int len = snprintf(NULL, 0, baseText, keybind) + 1;
@@ -1328,7 +1328,7 @@ void init(int argc, char* argv[]) {
         )
     );
 
-    IupSetAttribute(dialog, "TITLE", "clumsy Keybind Edition by Kalirenegade " CLUMSY_VERSION);
+    IupSetAttribute(dialog, "TITLE", "clumsy Keybind Edition by mmaxx45 " CLUMSY_VERSION);
     IupSetAttribute(dialog, "SIZE", "480x"); // add padding manually to width
     IupSetAttribute(dialog, "RESIZE", "NO");
     IupSetCallback(dialog, "SHOW_CB", (Icallback)uiOnDialogShow);
