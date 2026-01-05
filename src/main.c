@@ -959,7 +959,9 @@ void switchPreset(int direction) {
     // Update preset index (direction: 1 = next, -1 = previous)
     currentPresetIndex = (currentPresetIndex + direction + 5) % 5;
 
-    // Apply the new preset configuration
+    // Apply the new preset configuration to UI
+    // This updates the UI elements and triggers callbacks that atomically
+    // update the module variables, so changes apply instantly even while filtering
     presetConfigFuncs[currentPresetIndex]();
 
     // Update the dropdown UI to reflect the change (1-based index)
@@ -967,8 +969,13 @@ void switchPreset(int direction) {
     sprintf(indexStr, "%d", currentPresetIndex + 1);
     IupSetAttribute(filterSelectList3, "VALUE", indexStr);
 
-    // Print notification
-    printf("Switched to preset: %s\n", presetLookup[currentPresetIndex]->PresetName);
+    // Print notification with status
+    if (running) {
+        printf("Switched to preset: %s (changes applied instantly)\n",
+               presetLookup[currentPresetIndex]->PresetName);
+    } else {
+        printf("Switched to preset: %s\n", presetLookup[currentPresetIndex]->PresetName);
+    }
 }
 
 static int uiFilterTextCb(Ihandle *ih)  {
