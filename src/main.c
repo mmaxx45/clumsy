@@ -21,6 +21,7 @@
 int running = 0;
 int Mode = 0;
 char timerbuffer[6];
+int currentPresetIndex = 0; // Track current preset (0-4)
 
 // Helper macro and functions
 #define MATCH(s, n) (strcmp(section, s) == 0 && strcmp(name, n) == 0)
@@ -462,13 +463,13 @@ void init(int argc, char* argv[]) {
     // Define the keybind as a constant character string
     const char* keybind = general.Keybind;
 
-    // Base text with placeholder for the keybind variable
-    const char* baseText = "Use the key %s to toggle on/off\nThis is a modified version of clumsy to use hotkeys to toggle on/off coded by mmaxx45";
+    // Base text with placeholders for the keybind variable
+    const char* baseText = "Use the key %s to toggle on/off\nThis is a modified version of clumsy to use hotkeys to toggle on/off coded by mmaxx45\nUse Ctrl + %s for next preset, Shift + %s for previous preset";
 
-    // Calculate the length needed for the formatted string
-    int len = snprintf(NULL, 0, baseText, keybind) + 1;
+    // Calculate the length needed for the formatted string (3 keybind placeholders)
+    int len = snprintf(NULL, 0, baseText, keybind, keybind, keybind) + 1;
 
-  // Allocate memory for the label text
+    // Allocate memory for the label text
     char* labelText = (char*)malloc(len);
     if (labelText == NULL) {
         perror("Failed to allocate memory");
@@ -477,7 +478,7 @@ void init(int argc, char* argv[]) {
     }
 
     // Construct the label text with the keybind variable
-    snprintf(labelText, len, baseText, keybind);
+    snprintf(labelText, len, baseText, keybind, keybind, keybind);
     middleFrame = IupFrame(
         label1 = IupLabel(labelText)
     );
@@ -877,7 +878,8 @@ static int uiList3SelectCb(Ihandle* ih, char* text, int item, int state) {
     UNREFERENCED_PARAMETER(ih);
 
     if (state == 1 && item >= 1 && item <= 5) {
-        presetConfigFuncs[item - 1]();
+        currentPresetIndex = item - 1; // Update current preset index
+        presetConfigFuncs[currentPresetIndex]();
     }
     return IUP_DEFAULT;
 }
@@ -952,6 +954,23 @@ void preset5_config(void) {
     applyPresetConfig(&preset5);
 }
 
+// Switch to a specific preset and update UI
+void switchPreset(int direction) {
+    // Update preset index (direction: 1 = next, -1 = previous)
+    currentPresetIndex = (currentPresetIndex + direction + 5) % 5;
+
+    // Apply the new preset configuration
+    presetConfigFuncs[currentPresetIndex]();
+
+    // Update the dropdown UI to reflect the change (1-based index)
+    char indexStr[8];
+    sprintf(indexStr, "%d", currentPresetIndex + 1);
+    IupSetAttribute(filterSelectList3, "VALUE", indexStr);
+
+    // Print notification
+    printf("Switched to preset: %s\n", presetLookup[currentPresetIndex]->PresetName);
+}
+
 static int uiFilterTextCb(Ihandle *ih)  {
     UNREFERENCED_PARAMETER(ih);
     // unselect list
@@ -1017,25 +1036,40 @@ DWORD WINAPI threadFunction(LPVOID lpParam) {
 
     while (1) {
         BOOL isKeyDown = (GetAsyncKeyState(vkCode) & 0x8000) != 0;
+        BOOL isCtrlPressed = (GetAsyncKeyState(VK_CONTROL) & 0x8000) != 0;
+        BOOL isShiftPressed = (GetAsyncKeyState(VK_SHIFT) & 0x8000) != 0;
 
         if (isKeyDown && !keyCurrentlyDown) {
             // Key was just pressed
-            keyToggled = !keyToggled; // Toggle the state
             keyCurrentlyDown = TRUE; // Set the key state to down
-            printf("Key [ toggled to %s!\n", keyToggled ? "ON" : "OFF");
-            if (running) {
-                uiStopCb(filterButton);
+
+            // Check for Ctrl+Key (next preset) or Shift+Key (previous preset)
+            if (isCtrlPressed) {
+                printf("Ctrl + %s pressed: Switching to next preset\n", general.Keybind);
+                switchPreset(1); // Next preset
+            }
+            else if (isShiftPressed) {
+                printf("Shift + %s pressed: Switching to previous preset\n", general.Keybind);
+                switchPreset(-1); // Previous preset
             }
             else {
-                if (Mode == 0) {
-                    uiStartCb(filterButton);
+                // Regular key press - toggle filtering
+                keyToggled = !keyToggled; // Toggle the state
+                printf("Key %s toggled to %s!\n", general.Keybind, keyToggled ? "ON" : "OFF");
+                if (running) {
+                    uiStopCb(filterButton);
                 }
                 else {
-                    IupSetAttribute(filterButton, "ACTIVE", "NO");
-                    uiStartCb(filterButton);
-                    Sleep(DelayTimerValue);
-                    uiStopCb(filterButton);
-                    IupSetAttribute(filterButton, "ACTIVE", "YES");
+                    if (Mode == 0) {
+                        uiStartCb(filterButton);
+                    }
+                    else {
+                        IupSetAttribute(filterButton, "ACTIVE", "NO");
+                        uiStartCb(filterButton);
+                        Sleep(DelayTimerValue);
+                        uiStopCb(filterButton);
+                        IupSetAttribute(filterButton, "ACTIVE", "YES");
+                    }
                 }
             }
         }
