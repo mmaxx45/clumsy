@@ -69,152 +69,13 @@ typedef struct {
     bool SetTCPRST_Inbound;
     bool SetTCPRST_Outbound;
     const char* SetTCPRST_Chance;
-} Preset1;
+} PresetConfig;
 
-typedef struct {
-    const char* PresetName;
-    bool Lag_Inbound;
-    bool Lag_Outbound;
-    const char* Lag_Delay;
-    bool Drop_Inbound;
-    bool Drop_Outbound;
-    const char* Drop_Chance;
-    bool Disconnect_Inbound;
-    bool Disconnect_Outbound;
-    const char* BandwidthLimiter_QueueSize;
-    const char* BandwidthLimiter_Size;
-    bool BandwidthLimiter_Inbound;
-    bool BandwidthLimiter_Outbound;
-    const char* BandwidthLimiter_Limit;
-    bool Throttle_DropThrottled;
-    const char* Throttle_Timeframe;
-    bool Throttle_Inbound;
-    bool Throttle_Outbound;
-    const char* Throttle_Chance;
-    const char* Duplicate_Count;
-    bool Duplicate_Inbound;
-    bool Duplicate_Outbound;
-    const char* Duplicate_Chance;
-    bool OutOfOrder_Inbound;
-    bool OutOfOrder_Outbound;
-    const char* OutOfOrder_Chance;
-    bool Tamper_RedoChecksum;
-    bool Tamper_Inbound;
-    bool Tamper_Outbound;
-    const char* Tamper_Chance;
-    bool SetTCPRST_Inbound;
-    bool SetTCPRST_Outbound;
-    const char* SetTCPRST_Chance;
-} Preset2;
-
-typedef struct {
-    const char* PresetName;
-    bool Lag_Inbound;
-    bool Lag_Outbound;
-    const char* Lag_Delay;
-    bool Drop_Inbound;
-    bool Drop_Outbound;
-    const char* Drop_Chance;
-    bool Disconnect_Inbound;
-    bool Disconnect_Outbound;
-    const char* BandwidthLimiter_QueueSize;
-    const char* BandwidthLimiter_Size;
-    bool BandwidthLimiter_Inbound;
-    bool BandwidthLimiter_Outbound;
-    const char* BandwidthLimiter_Limit;
-    bool Throttle_DropThrottled;
-    const char* Throttle_Timeframe;
-    bool Throttle_Inbound;
-    bool Throttle_Outbound;
-    const char* Throttle_Chance;
-    const char* Duplicate_Count;
-    bool Duplicate_Inbound;
-    bool Duplicate_Outbound;
-    const char* Duplicate_Chance;
-    bool OutOfOrder_Inbound;
-    bool OutOfOrder_Outbound;
-    const char* OutOfOrder_Chance;
-    bool Tamper_RedoChecksum;
-    bool Tamper_Inbound;
-    bool Tamper_Outbound;
-    const char* Tamper_Chance;
-    bool SetTCPRST_Inbound;
-    bool SetTCPRST_Outbound;
-    const char* SetTCPRST_Chance;
-} Preset3;
-
-typedef struct {
-    const char* PresetName;
-    bool Lag_Inbound;
-    bool Lag_Outbound;
-    const char* Lag_Delay;
-    bool Drop_Inbound;
-    bool Drop_Outbound;
-    const char* Drop_Chance;
-    bool Disconnect_Inbound;
-    bool Disconnect_Outbound;
-    const char* BandwidthLimiter_QueueSize;
-    const char* BandwidthLimiter_Size;
-    bool BandwidthLimiter_Inbound;
-    bool BandwidthLimiter_Outbound;
-    const char* BandwidthLimiter_Limit;
-    bool Throttle_DropThrottled;
-    const char* Throttle_Timeframe;
-    bool Throttle_Inbound;
-    bool Throttle_Outbound;
-    const char* Throttle_Chance;
-    const char* Duplicate_Count;
-    bool Duplicate_Inbound;
-    bool Duplicate_Outbound;
-    const char* Duplicate_Chance;
-    bool OutOfOrder_Inbound;
-    bool OutOfOrder_Outbound;
-    const char* OutOfOrder_Chance;
-    bool Tamper_RedoChecksum;
-    bool Tamper_Inbound;
-    bool Tamper_Outbound;
-    const char* Tamper_Chance;
-    bool SetTCPRST_Inbound;
-    bool SetTCPRST_Outbound;
-    const char* SetTCPRST_Chance;
-} Preset4;
-
-typedef struct {
-    const char* PresetName;
-    bool Lag_Inbound;
-    bool Lag_Outbound;
-    const char* Lag_Delay;
-    bool Drop_Inbound;
-    bool Drop_Outbound;
-    const char* Drop_Chance;
-    bool Disconnect_Inbound;
-    bool Disconnect_Outbound;
-    const char* BandwidthLimiter_QueueSize;
-    const char* BandwidthLimiter_Size;
-    bool BandwidthLimiter_Inbound;
-    bool BandwidthLimiter_Outbound;
-    const char* BandwidthLimiter_Limit;
-    bool Throttle_DropThrottled;
-    const char* Throttle_Timeframe;
-    bool Throttle_Inbound;
-    bool Throttle_Outbound;
-    const char* Throttle_Chance;
-    const char* Duplicate_Count;
-    bool Duplicate_Inbound;
-    bool Duplicate_Outbound;
-    const char* Duplicate_Chance;
-    bool OutOfOrder_Inbound;
-    bool OutOfOrder_Outbound;
-    const char* OutOfOrder_Chance;
-    bool Tamper_RedoChecksum;
-    bool Tamper_Inbound;
-    bool Tamper_Outbound;
-    const char* Tamper_Chance;
-    bool SetTCPRST_Inbound;
-    bool SetTCPRST_Outbound;
-    const char* SetTCPRST_Chance;
-} Preset5;
-
+typedef PresetConfig Preset1;
+typedef PresetConfig Preset2;
+typedef PresetConfig Preset3;
+typedef PresetConfig Preset4;
+typedef PresetConfig Preset5;
 
 struct General {
     const char* Keybind;
@@ -2246,7 +2107,6 @@ static void uiSetupModule(Module *module, Ihandle *parent) {
 // Thread function
 DWORD WINAPI threadFunction(LPVOID lpParam) {
     UNREFERENCED_PARAMETER(lpParam);
-    printf("Hello from the thread!\n");
     BOOL keyToggled = FALSE; // Track the toggle state
     BOOL keyCurrentlyDown = FALSE; // Track the current key state
     while (1) {
